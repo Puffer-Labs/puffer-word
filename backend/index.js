@@ -1,21 +1,19 @@
-const WebSocket = require("ws");
-const WebSocketJSONStream = require("@teamwork/websocket-json-stream");
-
 const ShareDB = require("sharedb");
 ShareDB.types.register(require("rich-text").type);
+const sharedb_server = new ShareDB();
+const sharedb_connection = server.connect();
 
-const server = new ShareDB();
-const connection = server.connect();
+const express = require("express");
+const api = express();
+const port = 8000;
+api.use(express.json());
+api.use(express.urlencoded({ extended: true }));
 
-const document = connection.get("documents", "first");
-
-document.fetch(() => {
-  if (document.type === null) {
-    document.create([{ insert: "" }], "rich-text", () => {
-      const wsConnection = new WebSocket.Server({ port: 8080 });
-      wsConnection.on("connection", (ws) => {
-        server.listen(new WebSocketJSONStream(ws));
-      });
-    });
-  }
+const api_instance = api.listen(port, () => {
+  console.log(`API running on port ${port}`);
 });
+
+module.exports = {
+  sharedb_connection,
+  sharedb_server,
+};
