@@ -1,11 +1,12 @@
 const express = require("express");
 const api = express();
 const port = 8000;
+
 api.use(express.json());
 api.use(express.urlencoded({ extended: true }));
+
 const documentController = require("./controller/documentController");
 api.use("/documents", documentController);
-//create root endpoint
 api.get("/", (req, res) => {
   res.send("Hello World!");
 });
