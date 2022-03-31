@@ -6,7 +6,7 @@ import richText from "rich-text";
 
 Sharedb.types.register(richText.type);
 
-const socket = new WebSocket("ws://192.168.1.12:8080");
+const socket = new WebSocket("ws://localhost:8080");
 const connection = new Sharedb.Connection(socket);
 
 const document = connection.get("documents", "first");
@@ -35,6 +35,7 @@ const App = () => {
         if (source !== "user") {
           document.data = quill.getContents();
         } else {
+          console.log(delta);
           document.submitOp(delta, { source: quill });
         }
       });
