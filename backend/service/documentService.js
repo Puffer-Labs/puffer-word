@@ -1,7 +1,11 @@
 const ShareDB = require("../config/sharedbConfig");
+const Quill = require("quill/core");
+
 
 const getDocument = (id, res) => {
-  ShareDB.document.fetch(() => { //try to grab existing document
+  const document = ShareDB.sharedb_connection.get("documents", "default");
+  document.fetch(() => {
+    //try to grab existing document
     if (document.type === null) {
       document.create([{ insert: "" }], "rich-text", () => {
         res.set("Content-Type", "text/event-stream"); //send init message
@@ -12,18 +16,27 @@ const getDocument = (id, res) => {
     res.set("Content-Type", "text/event-stream"); //if document exists, send existing ops
     res.write("data: " + JSON.stringify(document.data) + "\n\n");
   });
-  document.on("op", (op, source) => { //have the client listen for changes
+  document.on("op", (op, source) => {
+    //have the client listen for changes
     res.write("data: " + JSON.stringify(op) + "\n\n");
   });
 };
 
 const getDocumentData = (id, res) => {
-  const document = ShareDB.sharedb_connection.get("documents", "default");
-  document.fetch(() => {
-    document.submitOp([{ retain: 1 }, { insert: "a" }], () => {
-      res.json(document.data);
-    });
-  });
+  // const document = ShareDB.sharedb_connection.get("documents", "default");
+  // document.fetch(() => {
+  //   document.submitOp([{ retain: 1 }, { insert: "a" }], () => {
+  //     res.json(document.data);
+  //   });
+  // });
+  res.json(quill.root.innerHTML);
 };
 
-module.exports = { getDocument, getDocumentData };
+const postOps = (id, ops, res) => {
+  const document = ShareDB.sharedb_connection.get("documents", "default");
+  document.fetch(() => {
+    document.submitOp(ops, () => res.json({ success: true }));
+  });
+}
+
+module.exports = { getDocument, getDocumentData, postOps };

@@ -24,4 +24,8 @@ documentRouter.get("/data/:id", (req, res) => {
   }
 });
 
+documentRouter.post("/doc/:id", (req, res) => {
+  documentService.postOps(req.params.id, req.body, res);
+});
+
 module.exports = documentRouter;
