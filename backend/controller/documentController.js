@@ -24,4 +24,13 @@ documentRouter.get("/data/:id", (req, res) => {
   }
 });
 
+documentRouter.get("/html/:id", (req, res) => {
+  const id = req.params.id;
+  try {
+    documentService.getDocumentHTML(id, res);
+  } catch (err) {
+    console.log(err);
+  }
+});
+
 module.exports = documentRouter;
