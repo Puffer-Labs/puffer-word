@@ -7,7 +7,7 @@ api.use(express.json());
 api.use(express.urlencoded({ extended: true }));
 
 const documentController = require("./controller/documentController");
-api.use("/documents", documentController);
+api.use("/", documentController);
 api.get("/", (req, res) => {
   res.send("Hello World!");
 });

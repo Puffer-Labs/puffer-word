@@ -10,24 +10,22 @@ documentRouter.get("/connect/:id", (req, res) => {
   } catch (err) {
     console.log(err);
   }
-
-  //TODO, error return-
 });
 
-//get document contents
-documentRouter.get("/data/:id", (req, res) => {
+documentRouter.get("/doc/:id", (req, res) => {
   const id = req.params.id;
   try {
-    documentService.getDocumentData(id, res);
+    documentService.getDocumentHTML(id, res);
   } catch (err) {
     console.log(err);
   }
 });
 
-documentRouter.get("/html/:id", (req, res) => {
+documentRouter.post("/op/:id", (req, res) => {
   const id = req.params.id;
+  const ops = req.body;
   try {
-    documentService.getDocumentHTML(id, res);
+    documentService.postOps(id, ops, res);
   } catch (err) {
     console.log(err);
   }
