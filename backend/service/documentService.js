@@ -33,12 +33,21 @@ const getDocument = (id, res) => {
 };
 
 const getDocumentData = (id, res) => {
-  document.fetch(() => {
-    document.submitOp([{ retain: 1 }, { insert: "a" }], () => {
-      res.json(document.data);
-    });
-  });
+  // const document = ShareDB.sharedb_connection.get("documents", "default");
+  // document.fetch(() => {
+  //   document.submitOp([{ retain: 1 }, { insert: "a" }], () => {
+  //     res.json(document.data);
+  //   });
+  // });
+  res.json(quill.root.innerHTML);
 };
+
+const postOps = (id, ops, res) => {
+  const document = ShareDB.sharedb_connection.get("documents", "default");
+  document.fetch(() => {
+    document.submitOp(ops, () => res.json({ success: true }));
+  });
+}
 
 //get document as html
 const getDocumentHTML = (id, res) => {
