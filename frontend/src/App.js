@@ -1,51 +1,56 @@
 import React from "react";
 import Quill from "quill";
-import Sharedb from "sharedb/lib/client";
 import "quill/dist/quill.snow.css";
-import richText from "rich-text";
 
-Sharedb.types.register(richText.type);
-
-const socket = new WebSocket("ws://localhost:8080");
-const connection = new Sharedb.Connection(socket);
-
-const document = connection.get("documents", "first");
+//generate random id
+const getId = () => {
+  return (
+    "_" +
+    Math.random().toString(36).substring(2, 15) +
+    Math.random().toString(36).substring(2, 15)
+  );
+};
 
 const App = () => {
   React.useEffect(() => {
-    document.subscribe(() => {
-      const options = {
-        theme: "snow",
-        modules: {
-          toolbar: [
-            "bold",
-            "italic",
-            "underline",
-            "strike",
-            "blockquote",
-            "code-block",
-            "link",
-          ],
-        },
-      };
-      let quill = new Quill("#editor", options);
-      quill.setContents(document.data);
+    const id = getId();
+    const options = {
+      theme: "snow",
+      modules: {
+        toolbar: [
+          "bold",
+          "italic",
+          "underline",
+          "strike",
+          "blockquote",
+          "code-block",
+          "link",
+        ],
+      },
+    };
+    let quill = new Quill("#editor", options);
 
-      quill.on("text-change", (delta, oldDelta, source) => {
-        if (source !== "user") {
-          document.data = quill.getContents();
-        } else {
-          console.log(delta);
-          document.submitOp(delta, { source: quill });
-        }
-      });
+    const connection = new EventSource("http://localhost:8000/connect/" + id);
+    connection.onmessage = (event) => {
+      quill.updateContents(JSON.parse(event.data).content);
+    };
 
-      document.on("op", (op, source) => {
-        if (source !== quill) {
-          quill.updateContents(op);
-        }
-      });
+    quill.on("text-change", (delta, oldDelta, source) => {
+      if (source === "user") {
+        //send op to server with fetch
+        const op = JSON.stringify(delta);
+        fetch("http://localhost:8000/op/" + id, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: op,
+        }).then((res) => {
+          console.log(res);
+        });
+      }
     });
+
     return () => {
       connection.close();
     };
