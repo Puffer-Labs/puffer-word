@@ -24,6 +24,7 @@
             theme: 'snow'
         });
         let delta_content = document.getElementById('delta').content;
+        console.log("Content: ",delta_content);
         quill.setContents(JSON.parse(delta_content));
         let rawHTML = quill.root.innerHTML;
         let body = document.getElementsByTagName('body')[0];

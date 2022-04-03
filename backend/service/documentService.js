@@ -33,10 +33,19 @@ const getDocument = (id, res) => {
 };
 
 const getDocumentData = (id, res) => {
+  res.json(quill.root.innerHTML);
+};
+
+const postOps = (id, ops, res) => {
+  const document = ShareDB.sharedb_connection.get("documents", "default");
   document.fetch(() => {
-    document.submitOp([{ retain: 1 }, { insert: "a" }], () => {
-      res.json(document.data);
-    });
+    // submit each op from list of op lists using reduce
+    document.submitOp(
+      ops.reduce((acc, op) => acc.concat(op), []),
+      () => {
+        res.json({ success: true });
+      }
+    );
   });
 };
 
@@ -44,9 +53,10 @@ const getDocumentData = (id, res) => {
 const getDocumentHTML = (id, res) => {
   document.fetch(() => {
     //try to grab existing document
+    console.log(document.data);
     const delta_contents = JSON.stringify(document.data);
     res.render("index", { delta: delta_contents });
   });
 };
 
-module.exports = { getDocument, getDocumentData, getDocumentHTML };
+module.exports = { getDocument, getDocumentData, getDocumentHTML, postOps };
