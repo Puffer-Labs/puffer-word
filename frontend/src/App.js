@@ -32,19 +32,24 @@ const App = () => {
 
     const connection = new EventSource("http://localhost:8000/connect/" + id);
     connection.onmessage = (event) => {
-      quill.updateContents(JSON.parse(event.data).content);
+      console.log(event);
+      const content = JSON.parse(event.data).content
+        ? JSON.parse(event.data).content
+        : JSON.parse(event.data);
+      quill.updateContents(content);
     };
 
     quill.on("text-change", (delta, oldDelta, source) => {
+      console.log(source);
       if (source === "user") {
         //send op to server with fetch
-        const op = JSON.stringify(delta);
+        const op = delta.ops;
         fetch("http://localhost:8000/op/" + id, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: op,
+          body: JSON.stringify(op),
         }).then((res) => {
           console.log(res);
         });
