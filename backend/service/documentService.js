@@ -7,9 +7,7 @@ const getDocument = (id, res) => {
     if (document.type === null) {
       document.create(
         [
-          { insert: "Gandalf", attributes: { bold: true } },
-          { insert: " the " },
-          { insert: "Grey", attributes: { color: "#ccc" } },
+          { insert: ""},
         ],
         "rich-text",
         () => {
@@ -27,14 +25,15 @@ const getDocument = (id, res) => {
     );
   });
   document.on("op", (op, source) => {
-    //have the client listen for changes
-    res.write("data: " + JSON.stringify(op) + "\n\n");
+    //have the client listen only if theyre not the source
+    if(source !== id) 
+      res.write("data: " + JSON.stringify(op) + "\n\n");
   });
 };
 
-const getDocumentData = (id, res) => {
-  res.json(quill.root.innerHTML);
-};
+// const getDocumentData = (id, res) => {
+//   res.json(quill.root.innerHTML);
+// };
 
 const postOps = (id, ops, res) => {
   const document = ShareDB.sharedb_connection.get("documents", "default");
@@ -42,6 +41,7 @@ const postOps = (id, ops, res) => {
     // submit each op from list of op lists using reduce
     document.submitOp(
       ops.reduce((acc, op) => acc.concat(op), []),
+      { source: id },
       () => {
         res.json({ success: true });
       }
@@ -59,4 +59,4 @@ const getDocumentHTML = (id, res) => {
   });
 };
 
-module.exports = { getDocument, getDocumentData, getDocumentHTML, postOps };
+module.exports = { getDocument, getDocumentHTML, postOps };
