@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
   },
   "author": "",
   "license": "ISC",
@@ -12,6 +13,7 @@
     "@teamwork/websocket-json-stream": "^2.0.0",
     "cors": "^2.8.5",
     "ejs": "^3.1.6",
+    "express": "^4.17.3",
     "rich-text": "^4.1.0",
     "sharedb": "^2.2.5",
     "ws": "^8.5.0"
