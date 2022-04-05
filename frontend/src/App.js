@@ -32,15 +32,18 @@ const App = () => {
 
     const connection = new EventSource("http://localhost:8000/connect/" + id);
     connection.onmessage = (event) => {
-      console.log(event);
-      const content = JSON.parse(event.data).content
-        ? JSON.parse(event.data).content
-        : JSON.parse(event.data);
-      quill.updateContents(content);
+      console.log(event.data);
+      // Initial OP
+      const data = JSON.parse(event.data);
+      if (data.content) {
+        quill.setContents(data.content);
+      } else {
+        data.map((op) => quill.updateContents(op));
+      }
     };
 
     quill.on("text-change", (delta, oldDelta, source) => {
-      console.log(source);
+      console.log({ delta, oldDelta, source });
       if (source === "user") {
         //send op to server with fetch
         const op = delta.ops;
@@ -51,7 +54,7 @@ const App = () => {
           },
           body: JSON.stringify(op),
         }).then((res) => {
-          console.log(res);
+          // console.log(res);
         });
       }
     });
@@ -61,14 +64,16 @@ const App = () => {
     };
   }, []);
   return (
-    <div
-      style={{
-        margin: "5%",
-        border: "1px solid black",
-      }}
-    >
-      <div id="editor" />
-    </div>
+    <>
+      <div
+        style={{
+          margin: "5%",
+          border: "1px solid black",
+        }}
+      >
+        <div id="editor" />
+      </div>
+    </>
   );
 };
 
