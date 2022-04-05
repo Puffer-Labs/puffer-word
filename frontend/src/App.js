@@ -2,7 +2,7 @@ import React from "react";
 import Quill from "quill";
 import "quill/dist/quill.snow.css";
 
-//generate random id
+//generate random client id
 const getId = () => {
   return (
     "_" +
@@ -30,10 +30,16 @@ const App = () => {
     };
     let quill = new Quill("#editor", options);
 
+    // Connect to the event source to listen for incoming operation changes
     const connection = new EventSource("http://localhost:8000/connect/" + id);
+
+    // server -> client
     connection.onmessage = (event) => {
-      console.log(event.data);
-      // Initial OP
+      /**
+       * There are 2 types of events that can be received:
+       * 1. {data: {content: oplist}} This is the initial state of the editor.
+       * 2. {data: array_of_oplists} This is the list of operations that have been applied to the document.
+       */
       const data = JSON.parse(event.data);
       if (data.content) {
         quill.setContents(data.content);
@@ -42,23 +48,26 @@ const App = () => {
       }
     };
 
+    // client -> server
     quill.on("text-change", (delta, oldDelta, source) => {
-      console.log({ delta, oldDelta, source });
+      /**
+       * Whenever the user makes a change to the editor, we send latest OP to the server.
+       */
       if (source === "user") {
-        //send op to server with fetch
         const op = delta.ops;
         fetch("http://localhost:8000/op/" + id, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(op),
+          body: JSON.stringify([op]),
         }).then((res) => {
           // console.log(res);
         });
       }
     });
 
+    // When the component is unmounted, we need to close the connection
     return () => {
       connection.close();
     };
