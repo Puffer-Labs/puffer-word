@@ -2,6 +2,10 @@ const ShareDB = require("../config/sharedbConfig");
 const QuillDeltaToHtmlConverter =
   require("quill-delta-to-html").QuillDeltaToHtmlConverter;
 const document = ShareDB.document;
+
+
+// This array keeps track of the active connections 
+// to make sure we don't have multiple connections from the same client
 let active_connections = [];
 
 /**
@@ -41,7 +45,7 @@ const connectToDocument = (id, res) => {
  *
  * If the client is not already connected, add them to the active_connections array.
  * If the client is already connected but they connect again, return a 400 HTTP error.
- * If the client disconnects, remove them from the active_connections array and end the text stream.
+ * If the client disconnects, remove them from the active_connections array and end the event stream.
  *
  */
 const addNewConnection = (id, res) => {
