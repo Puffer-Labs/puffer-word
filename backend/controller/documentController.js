@@ -5,8 +5,9 @@ const documentService = require("../service/documentService");
 //get stream and connect to document
 documentRouter.get("/connect/:id", (req, res) => {
   const id = req.params.id;
+  res.set("X-CSE356", "61f9d6733e92a433bf4fc8dd");
   try {
-    documentService.getDocument(id, res);
+    documentService.connectToDocument(id, res);
   } catch (err) {
     console.log(err);
   }
@@ -14,6 +15,7 @@ documentRouter.get("/connect/:id", (req, res) => {
 
 documentRouter.get("/doc/:id", (req, res) => {
   const id = req.params.id;
+  res.set("X-CSE356", "61f9d6733e92a433bf4fc8dd");
   try {
     documentService.getDocumentHTML(id, res);
   } catch (err) {
@@ -24,6 +26,7 @@ documentRouter.get("/doc/:id", (req, res) => {
 documentRouter.post("/op/:id", (req, res) => {
   const id = req.params.id;
   const ops = req.body;
+  res.set("X-CSE356", "61f9d6733e92a433bf4fc8dd");
   try {
     documentService.postOps(id, ops, res);
   } catch (err) {
