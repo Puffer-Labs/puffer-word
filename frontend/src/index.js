@@ -3,10 +3,18 @@ import ReactDOM from "react-dom";
 import "./index.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
+<<<<<<< HEAD
 
 ReactDOM.render(
   <React.StrictMode>
     <App/>
+=======
+import QuillFart from "./QuillFart";
+
+ReactDOM.render(
+  <React.StrictMode>
+    <QuillFart/>
+>>>>>>> 13074c0 (learning quill-cursor lib)
   </React.StrictMode>,
   document.getElementById("root")
 );
