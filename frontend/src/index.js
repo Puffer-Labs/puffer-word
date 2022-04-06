@@ -11,6 +11,8 @@ ReactDOM.render(
     <CookiesProvider>
       <App/>
     </CookiesProvider>
+
+
   </React.StrictMode>,
   document.getElementById("root")
 );
