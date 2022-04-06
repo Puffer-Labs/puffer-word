@@ -24,9 +24,9 @@ export default function App(){
           <Route exact path='/documents' element={<Documents/>}/>
           </Route>
           </Routes>
-
-
-      </BrowserRouter>
+          </BrowserRouter>
     </div>
-  )
-}
+  );
+
+
+};
