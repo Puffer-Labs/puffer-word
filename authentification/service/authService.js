@@ -15,4 +15,17 @@ const createUser = async (req, res) => {
 	}
 };
 
-module.exports = { createUser };
+const getAllUsers = async (res) => {
+	try {
+		let users = await user.find({});
+		res.status(200).send({ users: users });
+	} catch (err) {
+		res.status(500).send({ error: err.message });
+	}
+};
+
+const getSessionData = (req, res) => {
+	res.send(req.session);
+};
+
+module.exports = { createUser, getAllUsers, getSessionData };

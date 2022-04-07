@@ -4,7 +4,7 @@ const passport = require('passport');
 const LocalStraegy = require('passport-local').Strategy;
 
 passport.serializeUser((user, done) => {
-	done(null, user.id);
+	done(null, user);
 });
 
 passport.deserializeUser((id, done) => {
