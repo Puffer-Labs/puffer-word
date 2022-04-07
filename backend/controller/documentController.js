@@ -34,4 +34,15 @@ documentRouter.post("/op/:id", (req, res) => {
   }
 });
 
+documentRouter.post("/presence/:id", (req, res) => {
+  const range = req.body;
+  const id = req.params.id;
+  try {
+    documentService.submitPresenceRange(id, range);
+    res.json("success");
+  } catch (err) {
+    console.log(err);
+  }
+});
+
 module.exports = documentRouter;

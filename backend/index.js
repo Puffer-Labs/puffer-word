@@ -7,7 +7,7 @@ const port = 8000;
 api.use(express.json());
 api.use(express.urlencoded({ extended: true }));
 api.use(cors());
-parser(api);
+// parser(api);
 
 const documentController = require("./controller/documentController");
 api.use("/", documentController);
