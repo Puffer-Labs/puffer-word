@@ -8,9 +8,11 @@ const QuillDeltaToHtmlConverter =
 // NOTICE: Going to use connectionIds dictionary in the future instead.
 let active_connections = [];
 
-// Maps client ids to their ShareDB connections
-const connectionIds = {}
-
+/**
+ * Each client should have their own connection to a specific document.
+ * We are using this dictionary to map each client's ID to their connection.
+ */
+const connectionIds = {};
 
 /**
  *
@@ -49,45 +51,45 @@ const connectToDocument = (id, res) => {
 };
 
 /**
- * 
+ *
  * @param {Doc} document - Document instance
  * @param {string} id - Client ID
  * Creates a LocalPresence for the client.
  */
 const setupPresence = (document, id) => {
-    // Setup presence
-    const presence = document.connection.getDocPresence(
-      "documents",
-      "default"
-    );
+  // Setup presence
+  const presence = document.connection.getDocPresence("documents", "default");
 
-    presence.subscribe(function (err) {
-      if (err) console.error(err);
+  presence.subscribe(function (err) {
+    if (err) console.error(err);
+  });
+
+  // Setup LocalPresence
+  presence.create(id);
+
+  presence.on("receive", (id, range) => {
+    console.log("Received!");
+    console.log({
+      id,
+      range,
     });
-
-    // Setup LocalPresence
-    presence.create(id);
-
-    presence.on("receive", (id, range) => {
-      console.log("Received!");
-      console.log({
-        id,
-        range,
-      });
-    });
+  });
 };
 
 /**
- * 
+ *
  * @param {string} id - Client ID
  * @param {Range} range - Position of the cursor and its selection
  * Updates the cursor position for the client.
  */
 const submitPresenceRange = (id, range) => {
-  const presence = connectionIds[id].getDocPresence(
-    "documents",
-    "default"
-  );
+  const presence = connectionIds[id].getDocPresence("documents", "default");
+  /**
+   * A presence has a Set of local presences. Each local presence is
+   * identified by a unique ID, which is the client's ID.
+   * Here, we get the local presence for the client and then update its range.
+   * This will then notify all other clients of this client's new cursor position.
+   */
   presence.localPresences[id].submit(range, (err) => {
     if (err) console.error(err);
     else console.log("Submitted!");
@@ -95,7 +97,7 @@ const submitPresenceRange = (id, range) => {
 };
 
 /**
- *
+ * @deprecated - Use connectionIds instead
  * @param {string} id - id of the client
  * @param {Response} res - response object
  *
