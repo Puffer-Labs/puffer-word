@@ -1,39 +1,96 @@
 const ShareDB = require("../config/sharedbConfig");
 const QuillDeltaToHtmlConverter =
   require("quill-delta-to-html").QuillDeltaToHtmlConverter;
-const document = ShareDB.document;
+// const document = ShareDB.document;
 
-
-// This array keeps track of the active connections 
+// This array keeps track of the active connections
 // to make sure we don't have multiple connections from the same client
+// NOTICE: Going to use connectionIds dictionary in the future instead.
 let active_connections = [];
 
+// Maps client ids to their ShareDB connections
+const connectionIds = {}
+
+
 /**
- * 
+ *
  * @param {*} id id of the client
  * @param {*} res Response object
- * 
+ *
  * Attempts to connect to the document. If the document already exists, it will publish OPs through the event stream.
- * 
+ *
  */
 const connectToDocument = (id, res) => {
+  // Establish a new ShareDB connection
+  const connection = ShareDB.sharedb_server.connect();
+  const document = connection.get("documents", "default");
+
+  // Map the connection to the client ID
+  connectionIds[id] = connection;
   document.fetch(() => {
     // Add client ID to active connections
     if (!addNewConnection(id, res)) return;
     // If document doesn't exist, create it
-    if (document.type === null) 
-      document.create([{ insert: "" }], "rich-text");
+    if (document.type === null) document.create([{ insert: "" }], "rich-text");
     // Set appropriate headers
     res.set("X-Accel-Buffering", "no"); // Disable nginx buffering
-    res.set("Content-Type", "text/event-stream"); 
+    res.set("Content-Type", "text/event-stream");
     res.write(
       "data: " + JSON.stringify({ content: document.data.ops }) + "\n\n"
     ); // Write initial OPs to the stream
+
+    setupPresence(document, id);
 
     document.on("op", (op, source) => {
       // If the incoming op is from the client, ignore it
       if (source !== id) res.write("data: " + JSON.stringify([op]) + "\n\n");
     });
+  });
+};
+
+/**
+ * 
+ * @param {ShareDB Doc} document Document instance
+ * @param {*} id Client ID
+ * Creates a LocalPresence for the client.
+ */
+const setupPresence = (document, id) => {
+    // Setup presence
+    const presence = document.connection.getDocPresence(
+      "documents",
+      "default"
+    );
+
+    presence.subscribe(function (err) {
+      if (err) console.error(err);
+    });
+
+    // Setup LocalPresence
+    presence.create(id);
+
+    presence.on("receive", (id, range) => {
+      console.log("Received!");
+      console.log({
+        id,
+        range,
+      });
+    });
+};
+
+/**
+ * 
+ * @param {*} id Client ID
+ * @param {Cursor Range} range Position of the cursor and its selection
+ * Updates the cursor position for the client.
+ */
+const submitPresenceRange = (id, range) => {
+  const presence = connectionIds[id].getDocPresence(
+    "documents",
+    "default"
+  );
+  presence.localPresences[id].submit(range, (err) => {
+    if (err) console.error(err);
+    else console.log("Submitted!");
   });
 };
 
@@ -63,11 +120,11 @@ const addNewConnection = (id, res) => {
 };
 
 /**
- * 
+ *
  * @param {*} id id of the client
  * @param {*} ops array of operations
  * @param {*} res Response object
- * 
+ *
  * Goes through the ops array and submits them to the document.
  */
 const postOps = (id, ops, res) => {
@@ -79,10 +136,10 @@ const postOps = (id, ops, res) => {
 };
 
 /**
- * 
+ *
  * @param {*} id id of the client
  * @param {*} res Response object
- * 
+ *
  * Returns the document as HTML using the QuillDeltaToHtmlConverter.
  */
 const getDocumentHTML = (id, res) => {
@@ -93,4 +150,9 @@ const getDocumentHTML = (id, res) => {
   });
 };
 
-module.exports = { connectToDocument, getDocumentHTML, postOps };
+module.exports = {
+  connectToDocument,
+  getDocumentHTML,
+  postOps,
+  submitPresenceRange,
+};

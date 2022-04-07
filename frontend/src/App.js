@@ -72,6 +72,7 @@ const App = () => {
       connection.close();
     };
   }, []);
+
   return (
     <>
       <div
