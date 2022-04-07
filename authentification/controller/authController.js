@@ -28,8 +28,8 @@ router.get('/logout', (req, res) => {
 	res.status(200).send('Logged out');
 });
 
-router.get('/session/data', isLoggedIn, (req, res) => {
-	authService.getSessionData(req, res);
-});
+// router.get('/session/data', isLoggedIn, (req, res) => {
+// 	authService.getSessionData(req, res);
+// });
 
 module.exports = router;
