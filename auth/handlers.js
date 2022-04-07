@@ -37,7 +37,7 @@ const loginHandler = (req, res) => {
 
     const sessionToken = uuid.v4()
     const now = new Date()
-    const expiresAt = new Date(+now + 120 * 1000)
+    const expiresAt = new Date(+now + 50000 * 1000)
 
     const session = new Session(username, expiresAt)
     sessions[sessionToken] = session
@@ -45,6 +45,13 @@ const loginHandler = (req, res) => {
     // Store session cookie
     res.cookie("session_token", sessionToken, { expires: expiresAt })
     res.end()
+}
+
+const logoutHandler = (req, res ) => {
+
+    res.cookie("session_token", "", { expires: new Date()})
+    console.log(req.cookies)
+    res.send(req.cookies)
 }
 
 // Endpoint to GET cookies from local sessions & cookies in browser
@@ -56,7 +63,8 @@ const sessionHandler = (req, res) => {
 
 module.exports = {
     loginHandler: loginHandler,
-    sessionHandler: sessionHandler
+    sessionHandler: sessionHandler,
+    logoutHandler: logoutHandler
 }
 
 
