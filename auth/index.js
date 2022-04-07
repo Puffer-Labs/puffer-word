@@ -9,6 +9,5 @@ app.use(cookieParser())
 
 app.post('/loginHandler', loginHandler)
 app.get('/sessions', sessionHandler)
-// app.get('/welcome', welcomeHandler)
 
 app.listen(8080)
