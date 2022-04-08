@@ -24,11 +24,10 @@ const connectionIds = {};
  */
 const connectToDocument = (id, res) => {
   // Establish a new ShareDB connection
-  const connection = ShareDB.sharedb_server.connect();
+  const connection = ShareDB.sharedb_connection;
   const document = connection.get("documents", "default");
 
   // Map the connection to the client ID
-  connectionIds[id] = connection;
   document.fetch(() => {
     // Add client ID to active connections
     if (!addNewConnection(id, res)) return;
@@ -41,7 +40,7 @@ const connectToDocument = (id, res) => {
       "data: " + JSON.stringify({ content: document.data.ops }) + "\n\n"
     ); // Write initial OPs to the stream
 
-    setupPresence(document, id);
+    setupPresence(id, res);
 
     document.on("op", (op, source) => {
       // If the incoming op is from the client, ignore it
@@ -56,22 +55,30 @@ const connectToDocument = (id, res) => {
  * @param {string} id - Client ID
  * Creates a LocalPresence for the client.
  */
-const setupPresence = (document, id) => {
+const setupPresence = (id, res) => {
   // Setup presence
-  const presence = document.connection.getDocPresence("documents", "default");
+  const connection = ShareDB.sharedb_server.connect();
+  const doc = connection.get("documents", "default");
+  doc.fetch(() => {
+    const presence = doc.connection.getDocPresence("documents", "default");
+    connectionIds[id] = connection;
 
-  presence.subscribe(function (err) {
-    if (err) console.error(err);
-  });
+    presence.subscribe(function (err) {
+      if (err) console.error(err);
+    });
 
-  // Setup LocalPresence
-  presence.create(id);
+    // Setup LocalPresence
+    presence.create(id);
 
-  presence.on("receive", (id, range) => {
-    console.log("Received!");
-    console.log({
-      id,
-      range,
+    presence.on("receive", (id, range) => {
+      res.write(
+        `data: ${JSON.stringify({
+          cursor: {
+            id: id,
+            range: range,
+          },
+        })}\n\n`
+      );
     });
   });
 };
