@@ -71,9 +71,13 @@ const setupPresence = (id, res) => {
     presence.create(id);
 
     presence.on("receive", (id, range) => {
+      let connClosed = false;
+      if(!range)
+        connClosed = true;
       res.write(
         `data: ${JSON.stringify({
           cursor: {
+            connClosed,
             id: id,
             range: range,
           },
@@ -99,7 +103,7 @@ const submitPresenceRange = (id, range) => {
    */
   presence.localPresences[id].submit(range, (err) => {
     if (err) console.error(err);
-    else console.log("Submitted!");
+    else console.log("Submitted presence from id: " + id);
   });
 };
 
@@ -120,6 +124,9 @@ const addNewConnection = (id, res) => {
   } else {
     res.on("close", () => {
       active_connections = active_connections.filter((con) => con !== id);
+      const presence = connectionIds[id].getDocPresence("documents", "default");
+      delete connectionIds[id];
+      presence.destroy();
       res.end();
     });
     active_connections.push(id);
