@@ -8,6 +8,24 @@ import ProtectedRoute from "./ProtectedRoute";
 
 export default function App(){
 
+  function selectionChangeHandler(cursor, id) {
+    return function (range, oldRange, source) {
+      if (range) {
+        console.log(range);
+        fetch("http://localhost:8000/presence/" + id, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(range),
+        }).then((res) => {
+          console.log(res);
+        });
+        cursor.moveCursor(id, range);
+      }
+    };
+  }
+
   return (
     <div>
       <BrowserRouter>
