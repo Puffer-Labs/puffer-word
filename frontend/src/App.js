@@ -1,5 +1,6 @@
 import React from "react";
 import Quill from "quill";
+import QuillCursors from "quill-cursors";
 import "quill/dist/quill.snow.css";
 
 //generate random client id
@@ -11,12 +12,18 @@ const getId = () => {
   );
 };
 
+const cursors = {};
+
 const App = () => {
   React.useEffect(() => {
+    Quill.register("modules/cursors", QuillCursors);
     const id = getId();
     const options = {
       theme: "snow",
       modules: {
+        cursors: {
+          transformOnTextChange: true,
+        },
         toolbar: [
           "bold",
           "italic",
@@ -41,7 +48,15 @@ const App = () => {
        * 2. {data: array_of_oplists} This is the list of operations that have been applied to the document.
        */
       const data = JSON.parse(event.data);
-      if (data.content) {
+      if (data.cursor) {
+        if (cursors[data.cursor.id]) {
+          cursors[data.cursor.id].moveCursor(data.cursor.range);
+        } else {
+          const cursor = quill.getModule("cursors");
+          cursor.createCursor(data.cursor.id, data.cursor.id, "red");
+          cursors[data.cursor.id] = cursor;
+        }
+      } else if (data.content) {
         quill.setContents(data.content);
       } else {
         data.map((op) => quill.updateContents(op));
@@ -67,11 +82,31 @@ const App = () => {
       }
     });
 
+    quill.on("selection-change", selectionChangeHandler(cursors[id], id));
+
     // When the component is unmounted, we need to close the connection
     return () => {
       connection.close();
     };
   }, []);
+
+  function selectionChangeHandler(cursor, id) {
+    return function (range, oldRange, source) {
+      if (range) {
+        console.log(range);
+        fetch("http://localhost:8000/presence/" + id, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(range),
+        }).then((res) => {
+          console.log(res);
+        });
+        cursor.moveCursor(id, range);
+      }
+    };
+  }
 
   return (
     <>
