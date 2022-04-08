@@ -1,10 +1,10 @@
 const express = require('express');
 
 const isLoggedIn = (req, res, next) => {
-	if (req.user) {
+	if (req.session.passport) {
 		next();
 	} else {
-		res.send('You must be logged in to view this page');
+		res.status(403).send('You must be logged in to view this page');
 	}
 };
 
