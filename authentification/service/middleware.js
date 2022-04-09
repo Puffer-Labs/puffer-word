@@ -1,6 +1,7 @@
 const express = require('express');
 
 const isLoggedIn = (req, res, next) => {
+	console.log(req.session)
 	if (req.session.passport) {
 		next();
 	} else {

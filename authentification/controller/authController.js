@@ -23,20 +23,28 @@ router.post('/login', (req, res) => {
 				expires: new Date(Date.now() + 6 * 60 * 60 * 1000)
 			});
 			res.status(200).send('Logged in');
+
 		}
 	});
 });
 
 router.get('/me', isLoggedIn, (req, res) => {
+
 	res.status(200).send(req.user);
 });
 
-router.get('/logout', isLoggedIn, (req, res) => {
-	req.session.destroy(() => {
-		res.clearCookie('connect.sid');
-		res.clearCookie('user');
-		res.status(200).send('Logged out');
+router.get('/logout', function(req,res){
+	req.logOut();
+	res.status(200).clearCookie('connect.sid', {
+	  path: '/',
+	  secure: false,
+	  httpOnly: false,
+	  domain: 'http://localhost:3000',
+	  sameSite: true,
 	});
-});
+	req.session.destroy(function (err) {
+	  res.redirect('/');
+	});
+  });
 
 module.exports = router;
