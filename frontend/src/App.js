@@ -10,7 +10,7 @@ export default function App(){
 
   function selectionChangeHandler(cursor, id) {
     return function (range, oldRange, source) {
-      if (range) {
+      if (range && source === "user") {
         console.log(range);
         fetch("http://localhost:8000/presence/" + id, {
           method: "POST",
@@ -21,7 +21,7 @@ export default function App(){
         }).then((res) => {
           console.log(res);
         });
-        cursor.moveCursor(id, range);
+        // cursor.moveCursor(id, range);
       }
     };
   }
