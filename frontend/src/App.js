@@ -37,24 +37,42 @@ const App = () => {
     };
     let quill = new Quill("#editor", options);
 
+    //init this client's cursor
+    const cursor = quill.getModule("cursors");
+    cursor.createCursor(id, id, "red");
+    cursors[id] = cursor;
+
     // Connect to the event source to listen for incoming operation changes
     const connection = new EventSource("http://localhost:8000/connect/" + id);
 
     // server -> client
     connection.onmessage = (event) => {
       /**
-       * There are 2 types of events that can be received:
+       * There are 3 types of events that can be received:
        * 1. {data: {content: oplist}} This is the initial state of the editor.
        * 2. {data: array_of_oplists} This is the list of operations that have been applied to the document.
+       * 3. {data: {cursor: {connClosed: boolean, id: string, position: number}}} This is the cursor position of one of the clients that was updated.
        */
       const data = JSON.parse(event.data);
-      if (data.cursor) {
-        if (cursors[data.cursor.id]) {
-          cursors[data.cursor.id].moveCursor(data.cursor.range);
+      //if the change coming in is this client's cursor, ignore it
+      if (data.cursor && data.cursor.id !== id) {
+        const cursor = quill.getModule("cursors");
+        const cursorClient = cursors[data.cursor.id];
+        if (cursorClient) {
+          if (data.cursor.connClosed) {
+            //remove cursor object from table when cursor client disconnects
+            console.log("removing cursor");
+            cursor.removeCursor(cursorClient.id);
+            delete cursors[cursorClient.id];
+          } else {
+            cursor.moveCursor(
+              cursorClient.id,
+              data.cursor.range
+            );
+          }
         } else {
-          const cursor = quill.getModule("cursors");
-          cursor.createCursor(data.cursor.id, data.cursor.id, "red");
-          cursors[data.cursor.id] = cursor;
+          console.log("creating cursor");
+          cursors[data.cursor.id] = cursor.createCursor(data.cursor.id, data.cursor.id, "blue");
         }
       } else if (data.content) {
         quill.setContents(data.content);
@@ -92,7 +110,7 @@ const App = () => {
 
   function selectionChangeHandler(cursor, id) {
     return function (range, oldRange, source) {
-      if (range) {
+      if (range && source === "user") {
         console.log(range);
         fetch("http://localhost:8000/presence/" + id, {
           method: "POST",
@@ -103,7 +121,7 @@ const App = () => {
         }).then((res) => {
           console.log(res);
         });
-        cursor.moveCursor(id, range);
+        // cursor.moveCursor(id, range);
       }
     };
   }
