@@ -8,7 +8,7 @@ import ProtectedRoute from "./ProtectedRoute";
 
 export default function App(){
 
-  function selectionChangeHandler(cursor, id) {
+  function selectionChangeHandler(id) {
     return function (range, oldRange, source) {
       if (range && source === "user") {
         console.log(range);

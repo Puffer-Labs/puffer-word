@@ -74,6 +74,8 @@ const setupPresence = (id, res) => {
       let connClosed = false;
       if(!range)
         connClosed = true;
+      
+      console.log("Range at `receive`", range);
       res.write(
         `data: ${JSON.stringify({
           cursor: {
@@ -94,16 +96,21 @@ const setupPresence = (id, res) => {
  * Updates the cursor position for the client.
  */
 const submitPresenceRange = (id, range) => {
-  const presence = connectionIds[id].getDocPresence("documents", "default");
+  const connection = connectionIds[id];
+  const doc = connection.get("documents", "default");
+  doc.fetch(() => {
+    const presence = connection.getDocPresence("documents", "default");
   /**
    * A presence has a Set of local presences. Each local presence is
    * identified by a unique ID, which is the client's ID.
    * Here, we get the local presence for the client and then update its range.
    * This will then notify all other clients of this client's new cursor position.
    */
-  presence.localPresences[id].submit(range, (err) => {
-    if (err) console.error(err);
-    else console.log("Submitted presence from id: " + id);
+    console.log("Range before callback", range);
+    presence.localPresences[id].submit(range, (err) => {
+      if (err) console.error(err);
+      else console.log("Range at `submit`", range);
+    });
   });
 };
 
