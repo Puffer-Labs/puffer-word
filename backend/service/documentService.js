@@ -3,10 +3,11 @@ const QuillDeltaToHtmlConverter =
   require("quill-delta-to-html").QuillDeltaToHtmlConverter;
 // const document = ShareDB.document;
 
-// This array keeps track of the active connections
-// to make sure we don't have multiple connections from the same client
-// NOTICE: Going to use connectionIds dictionary in the future instead.
-let active_connections = [];
+// This table keeps track of the active connections made to it, where each document, as a key,
+// has a table of id|connection key-value pairs as its value.
+// ex for one active document, activeDocuments["default"]
+// { "default": { "connection1": connectionObj, "connection2": connectionObj } }
+let activeDocuments = {};
 
 /**
  * Each client should have their own connection to a specific document.
@@ -33,6 +34,7 @@ const connectToDocument = (id, res) => {
     if (!addNewConnection(id, res)) return;
     // If document doesn't exist, create it
     if (document.type === null) document.create([{ insert: "" }], "rich-text");
+
     // Set appropriate headers
     res.set("X-Accel-Buffering", "no"); // Disable nginx buffering
     res.set("Content-Type", "text/event-stream");
@@ -46,6 +48,7 @@ const connectToDocument = (id, res) => {
       // If the incoming op is from the client, ignore it
       if (source !== id) res.write("data: " + JSON.stringify([op]) + "\n\n");
     });
+    console.log("Connected to document");
   });
 };
 
@@ -60,8 +63,8 @@ const setupPresence = (id, res) => {
   const connection = ShareDB.sharedb_server.connect();
   const doc = connection.get("documents", "default");
   doc.fetch(() => {
-    const presence = doc.connection.getDocPresence("documents", "default");
-    connectionIds[id] = connection;
+    const presence = connection.getDocPresence("documents", "default");
+    activeDocuments["default"][id] = connection;
 
     presence.subscribe(function (err) {
       if (err) console.error(err);
@@ -70,11 +73,38 @@ const setupPresence = (id, res) => {
     // Setup LocalPresence
     presence.create(id);
 
+    for (const key in activeDocuments["default"]) {
+      if (key !== id) {
+        const remotePresence = activeDocuments["default"][key].getDocPresence(
+          "documents",
+          "default"
+        );
+        presence.remotePresences[key] =
+          remotePresence.localPresences[key].value;
+      }
+    }
+
+    //For each remote presence key, write their value to client
+    Object.keys(presence.remotePresences).forEach((key) => {
+      if (presence.remotePresences[key]) {
+        res.write(
+          "data: " +
+            JSON.stringify({
+              cursor: {
+                connClosed: false,
+                id: key,
+                range: presence.remotePresences[key].value,
+              },
+            }) +
+            "\n\n"
+        );
+      }
+    });
+
     presence.on("receive", (id, range) => {
       let connClosed = false;
-      if(!range)
-        connClosed = true;
-      
+      if (!range) connClosed = true;
+
       console.log("Range at `receive`", range);
       res.write(
         `data: ${JSON.stringify({
@@ -96,16 +126,16 @@ const setupPresence = (id, res) => {
  * Updates the cursor position for the client.
  */
 const submitPresenceRange = (id, range) => {
-  const connection = connectionIds[id];
+  const connection = activeDocuments["default"][id];
   const doc = connection.get("documents", "default");
   doc.fetch(() => {
     const presence = connection.getDocPresence("documents", "default");
-  /**
-   * A presence has a Set of local presences. Each local presence is
-   * identified by a unique ID, which is the client's ID.
-   * Here, we get the local presence for the client and then update its range.
-   * This will then notify all other clients of this client's new cursor position.
-   */
+    /**
+     * A presence has a Set of local presences. Each local presence is
+     * identified by a unique ID, which is the client's ID.
+     * Here, we get the local presence for the client and then update its range.
+     * This will then notify all other clients of this client's new cursor position.
+     */
     console.log("Range before callback", range);
     presence.localPresences[id].submit(range, (err) => {
       if (err) console.error(err);
@@ -115,7 +145,6 @@ const submitPresenceRange = (id, range) => {
 };
 
 /**
- * @deprecated - Use connectionIds instead
  * @param {string} id - id of the client
  * @param {Response} res - response object
  *
@@ -125,18 +154,29 @@ const submitPresenceRange = (id, range) => {
  *
  */
 const addNewConnection = (id, res) => {
-  if (active_connections.includes(id)) {
+  //If this document is currently active && a client with this id is already connected, do not accept connection
+  if (
+    activeDocuments["default"] !== undefined &&
+    activeDocuments["default"][id] !== undefined
+  ) {
     res.sendStatus(400);
     return false;
   } else {
+    //if document is not active, create key for it
+    if (activeDocuments["default"] === undefined)
+      activeDocuments["default"] = {};
     res.on("close", () => {
-      active_connections = active_connections.filter((con) => con !== id);
-      const presence = connectionIds[id].getDocPresence("documents", "default");
-      delete connectionIds[id];
+      const presence = activeDocuments["default"][id].getDocPresence(
+        "documents",
+        "default"
+      );
       presence.destroy();
+      delete activeDocuments["default"][id];
+      //if active document has no more connections, delete it
+      if (Object.keys(activeDocuments["default"]).length === 0)
+        delete activeDocuments["default"];
       res.end();
     });
-    active_connections.push(id);
   }
   return true;
 };
