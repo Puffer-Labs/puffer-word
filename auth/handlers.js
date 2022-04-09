@@ -43,7 +43,8 @@ const loginHandler = (req, res) => {
     sessions[sessionToken] = session
 
     // Store session cookie
-    res.cookie("session_token", sessionToken, { expires: expiresAt })
+    res.cookie("session_token", { expires: expiresAt,
+        name: "cock", sessionToken: sessionToken })
     res.end()
 }
 
@@ -56,7 +57,6 @@ const logoutHandler = (req, res ) => {
 
 // Endpoint to GET cookies from local sessions & cookies in browser
 const sessionHandler = (req, res) => {
-    console.log(sessions)
     console.log(req.cookies)
     res.send(req.cookies)
 }
