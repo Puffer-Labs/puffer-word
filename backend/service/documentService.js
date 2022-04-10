@@ -3,7 +3,13 @@ const QuillDeltaToHtmlConverter =
   require("quill-delta-to-html").QuillDeltaToHtmlConverter;
 // const document = ShareDB.document;
 
-// This table keeps track of the active connections made to it, where each document, as a key,
+//TODO:
+// Check global structures after disconnects
+// Fix initial connection cursor placement
+
+
+
+// This table keeps track of the active connections made to it, where each document name, as a key,
 // has a table of id|connection key-value pairs as its value.
 // ex for one active document, activeDocuments["default"]
 // { "default": { "connection1": connectionObj, "connection2": connectionObj } }
@@ -72,6 +78,12 @@ const setupPresence = (id, res) => {
 
     // Setup LocalPresence
     presence.create(id);
+
+    // Emit initial cursor position for other clients
+    presence.localPresences[id].submit({index:0, length: 0}, (err) => {
+      if (err) console.error(err);
+      else console.log("Initial presence submission received");
+    });
 
     for (const key in activeDocuments["default"]) {
       if (key !== id) {
