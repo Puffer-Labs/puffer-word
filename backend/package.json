@@ -16,6 +16,7 @@
     "quill-delta-to-html": "^0.12.0",
     "rich-text": "^4.1.0",
     "sharedb": "^2.2.5",
+    "sharedb-mongo": "^1.0.0",
     "ws": "^8.5.0"
   }
 }
