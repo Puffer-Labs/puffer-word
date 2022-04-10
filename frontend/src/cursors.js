@@ -67,12 +67,11 @@ const init = (quill) => {
  * The remote cursor is added to the cursors dictionary.
  */
 const create = (id) => {
-  const {name, color} = _generateMetadata();
-  cursors[id] = cursorModule.createCursor(
-    id,
-    name,
-    color
-  );
+  const { name, color } = _generateMetadata();
+  cursors[id] = cursorModule.createCursor(id, id, color);
+  //initiate cursor position on page for new remote connection
+  //move(id, { index: 0, length: 0 });
+  cursorModule.update();
 };
 
 /**
