@@ -2,6 +2,7 @@ import React from "react";
 import Quill from "quill";
 import QuillCursors from "quill-cursors";
 import cursors from "./cursors";
+import images from "./images";
 import "quill/dist/quill.snow.css";
 
 //generate random client id
@@ -31,6 +32,7 @@ const App = () => {
           "blockquote",
           "code-block",
           "link",
+          "image",
         ],
       },
     };
@@ -56,15 +58,17 @@ const App = () => {
       } else if (data.content) {
         quill.setContents(data.content);
       } else {
+        console.log(data);
         data.map((op) => quill.updateContents(op));
       }
     };
-    
+
     // client -> server
     quill.on("text-change", (delta, oldDelta, source) => {
       /**
        * Whenever the user makes a change to the editor, we send latest OP to the server.
        */
+
       if (source === "user") {
         const op = delta.ops;
         fetch("http://localhost:8000/op/" + id, {
@@ -80,6 +84,9 @@ const App = () => {
     });
 
     quill.on("selection-change", selectionChangeHandler(id));
+    quill
+      .getModule("toolbar")
+      .addHandler("image", () => images.handleUpload(quill));
 
     // When the component is unmounted, we need to close the connection
     return () => {

@@ -2,6 +2,13 @@ const express = require("express");
 const documentRouter = express.Router();
 const documentService = require("../service/documentService");
 
+
+documentRouter.post("/upload", (req, res) => {
+  res.json({
+    url: "https://picsum.photos/200",
+  })
+});
+
 //get stream and connect to document
 documentRouter.get("/connect/:id", (req, res) => {
   const id = req.params.id;
