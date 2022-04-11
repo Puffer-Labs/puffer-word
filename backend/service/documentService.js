@@ -30,16 +30,18 @@ const connectionIds = {};
  * Attempts to connect to the document. If the document already exists, it will publish OPs through the event stream.
  *
  */
-const connectToDocument = (id, res) => {
+const connectToDocument = (docId, uId, res) => {
   // Establish a new ShareDB connection
   const connection = ShareDB.sharedb_connection;
-  const document = connection.get("documents", "default");
+  const document = connection.get("documents", docId);
   // Map the connection to the client ID
   document.fetch(() => {
+    if (document.type === null)
+      //throw error if null
+      throw new Error("Document does not exist");
+
     // Add client ID to active connections
-    if (!addNewConnection(id, res)) return;
-    // If document doesn't exist, create it
-    if (document.type === null) document.create([{ insert: "" }], "rich-text");
+    if (!addNewConnection(docId, uId, res)) return;
 
     // Set appropriate headers
     res.set("X-Accel-Buffering", "no"); // Disable nginx buffering
@@ -48,11 +50,11 @@ const connectToDocument = (id, res) => {
       "data: " + JSON.stringify({ content: document.data.ops }) + "\n\n"
     ); // Write initial OPs to the stream
 
-    setupPresence(id, res);
+    setupPresence(docId, uId, res);
 
     document.on("op", (op, source) => {
       // If the incoming op is from the client, ignore it
-      if (source !== id) res.write("data: " + JSON.stringify([op]) + "\n\n");
+      if (source !== uId) res.write("data: " + JSON.stringify([op]) + "\n\n");
     });
     console.log("Connected to document");
   });
@@ -61,35 +63,36 @@ const connectToDocument = (id, res) => {
 /**
  *
  * @param {Doc} document - Document instance
- * @param {string} id - Client ID
+ * @param {string} docId - Document ID
+ * @param {string} uId - Client ID
  * Creates a LocalPresence for the client.
  */
-const setupPresence = (id, res) => {
+const setupPresence = (docId, uId, res) => {
   // Setup presence
   const connection = ShareDB.sharedb_server.connect();
-  const doc = connection.get("documents", "default");
+  const doc = connection.get("documents", docId);
   doc.fetch(() => {
-    const presence = connection.getDocPresence("documents", "default");
-    activeDocuments["default"][id] = connection;
+    const presence = connection.getDocPresence("documents", docId);
+    activeDocuments[docId][uId] = connection;
 
     presence.subscribe(function (err) {
       if (err) console.error(err);
     });
 
     // Setup LocalPresence
-    presence.create(id);
+    presence.create(uId);
 
     // Emit initial cursor position for other clients
-    presence.localPresences[id].submit({ index: 0, length: 0 }, (err) => {
+    presence.localPresences[uId].submit({ index: 0, length: 0 }, (err) => {
       if (err) console.error(err);
       else console.log("Initial presence submission received");
     });
 
-    for (const key in activeDocuments["default"]) {
-      if (key !== id) {
-        const remotePresence = activeDocuments["default"][key].getDocPresence(
+    for (const key in activeDocuments[docId]) {
+      if (key !== uId) {
+        const remotePresence = activeDocuments[docId][key].getDocPresence(
           "documents",
-          "default"
+          docId
         );
         presence.remotePresences[key] =
           remotePresence.localPresences[key].value;
@@ -132,16 +135,16 @@ const setupPresence = (id, res) => {
 };
 
 /**
- *
- * @param {string} id - Client ID
+ * @param {string} docId - Document ID
+ * @param {string} uId - Client ID
  * @param {Range} range - Position of the cursor and its selection
  * Updates the cursor position for the client.
  */
-const submitPresenceRange = (id, range) => {
-  const connection = activeDocuments["default"][id];
-  const doc = connection.get("documents", "default");
+const submitPresenceRange = (docId, uId, range) => {
+  const connection = activeDocuments[docId][uId];
+  const doc = connection.get("documents", docId);
   doc.fetch(() => {
-    const presence = connection.getDocPresence("documents", "default");
+    const presence = connection.getDocPresence("documents", docId);
     /**
      * A presence has a Set of local presences. Each local presence is
      * identified by a unique ID, which is the client's ID.
@@ -149,7 +152,7 @@ const submitPresenceRange = (id, range) => {
      * This will then notify all other clients of this client's new cursor position.
      */
     console.log("Range before callback", range);
-    presence.localPresences[id].submit(range, (err) => {
+    presence.localPresences[uId].submit(range, (err) => {
       if (err) console.error(err);
       else console.log("Range at `submit`", range);
     });
@@ -157,7 +160,8 @@ const submitPresenceRange = (id, range) => {
 };
 
 /**
- * @param {string} id - id of the client
+ * @param {string} docId - Document ID
+ * @param {string} uId - Client ID
  * @param {Response} res - response object
  *
  * If the client is not already connected, add them to the active_connections array.
@@ -165,28 +169,27 @@ const submitPresenceRange = (id, range) => {
  * If the client disconnects, remove them from the active_connections array and end the event stream.
  *
  */
-const addNewConnection = (id, res) => {
+const addNewConnection = (docId, uId, res) => {
   //If this document is currently active && a client with this id is already connected, do not accept connection
   if (
-    activeDocuments["default"] !== undefined &&
-    activeDocuments["default"][id] !== undefined
+    activeDocuments[docId] !== undefined &&
+    activeDocuments[docId][uId] !== undefined
   ) {
     res.sendStatus(400);
     return false;
   } else {
     //if document is not active, create key for it
-    if (activeDocuments["default"] === undefined)
-      activeDocuments["default"] = {};
+    if (activeDocuments[docId] === undefined) activeDocuments[docId] = {};
     res.on("close", () => {
-      const presence = activeDocuments["default"][id].getDocPresence(
+      const presence = activeDocuments[docId][uId].getDocPresence(
         "documents",
-        "default"
+        docId
       );
       presence.destroy();
-      delete activeDocuments["default"][id];
+      delete activeDocuments[docId][uId];
       //if active document has no more connections, delete it
-      if (Object.keys(activeDocuments["default"]).length === 0)
-        delete activeDocuments["default"];
+      if (Object.keys(activeDocuments[docId]).length === 0)
+        delete activeDocuments[docId];
       res.end();
     });
   }
@@ -194,30 +197,31 @@ const addNewConnection = (id, res) => {
 };
 
 /**
- *
- * @param {string} id - id of the client
+ * @param {string} docId - Document ID
+ * @param {string} uId - Client ID
  * @param {Array} ops - array of operations
  * @param {Response} res - Response object
  *
  * Goes through the ops array and submits them to the document.
  */
-const postOps = (id, ops, res) => {
-  const document = ShareDB.sharedb_connection.get("documents", "default");
+const postOps = (docId, uId, ops, res) => {
+  const document = ShareDB.sharedb_connection.get("documents", docId);
   document.fetch(() => {
-    ops.map((op) => document.submitOp(op, { source: id }));
+    ops.map((op) => document.submitOp(op, { source: uId }));
     res.json({ success: true });
   });
 };
 
 /**
- *
- * @param {string} id - id of the client
+ * @param {string} docId - Document ID
  * @param {Response} res - Response object
  *
  * Returns the document as HTML using the QuillDeltaToHtmlConverter.
  */
-const getDocumentHTML = (id, res) => {
+const getDocumentHTML = (docId, res) => {
+  const document = connection.get("documents", docId);
   document.fetch(() => {
+    if(document.type === null) throw new Error("Document does not exist");
     //try to grab existing document
     const parser = new QuillDeltaToHtmlConverter(document.data.ops, {});
     res.send(parser.convert());
