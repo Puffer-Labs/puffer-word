@@ -34,7 +34,6 @@ const connectToDocument = (id, res) => {
   // Establish a new ShareDB connection
   const connection = ShareDB.sharedb_connection;
   const document = connection.get("documents", "default");
-
   // Map the connection to the client ID
   document.fetch(() => {
     // Add client ID to active connections
