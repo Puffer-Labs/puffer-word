@@ -9,7 +9,7 @@ documentRouter.get("/connect/:id", (req, res) => {
   try {
     documentService.connectToDocument(id, res);
   } catch (err) {
-    console.log(err);
+    res.status(400).send({ error: err.message });
   }
 });
 
@@ -19,7 +19,7 @@ documentRouter.get("/doc/:id", (req, res) => {
   try {
     documentService.getDocumentHTML(id, res);
   } catch (err) {
-    console.log(err);
+    res.status(400).send({ error: err.message });
   }
 });
 
@@ -30,7 +30,7 @@ documentRouter.post("/op/:id", (req, res) => {
   try {
     documentService.postOps(id, ops, res);
   } catch (err) {
-    console.log(err);
+    res.status(400).send({ error: err.message });
   }
 });
 
@@ -41,7 +41,7 @@ documentRouter.post("/presence/:id", (req, res) => {
     documentService.submitPresenceRange(id, range);
     res.json("success");
   } catch (err) {
-    console.log(err);
+    res.status(400).send({ error: err.message });
   }
 });
 
@@ -50,9 +50,8 @@ documentRouter.post("/collection/create", (req, res) => {
   res.set("X-CSE356", "61f9d6733e92a433bf4fc8dd");
   try {
     const docid = documentService.createDocument(name, res);
-  }
-  catch (err) {
-    console.log(err);
+  } catch (err) {
+    res.status(400).send({ error: err.message });
   }
 });
 
@@ -62,9 +61,8 @@ documentRouter.delete("/collection/delete", (req, res) => {
   try {
     documentService.deleteDocument(id);
     res.send("success");
-  }
-  catch (err) {
-    console.log(err);
+  } catch (err) {
+    res.status(400).send({ error: err.message });
   }
 });
 
@@ -73,9 +71,8 @@ documentRouter.get("/collection/list", async (req, res) => {
   try {
     const docs = await documentService.getDocuments();
     res.send(docs);
-  }
-  catch (err) {
-    console.log(err);
+  } catch (err) {
+    res.status(400).send({ error: err.message });
   }
 });
 
