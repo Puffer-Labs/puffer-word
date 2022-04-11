@@ -39,8 +39,16 @@ const _generateRandomID = () => {
   );
 };
 
+/**
+ * 
+ * @param {Response} res - The response object.
+ * @param {string} mediaId - The media ID.
+ */
 const getFile = (res, mediaId) => {
-  // Return the contents of a previously uploaded media file (GET request).
+	/**
+	 * Read the file from the /uploads directory.
+	 * The slice removes the /controller/ part of the path.
+	 */
   const uploadPath =
     __dirname.split("/").slice(0, -1).join("/") +
     "/uploads/" +
