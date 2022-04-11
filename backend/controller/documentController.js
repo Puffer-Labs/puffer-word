@@ -45,4 +45,39 @@ documentRouter.post("/presence/:id", (req, res) => {
   }
 });
 
+documentRouter.post("/collection/create", (req, res) => {
+  const name = req.body.name;
+  res.set("X-CSE356", "61f9d6733e92a433bf4fc8dd");
+  try {
+    const docid = documentService.createDocument(name);
+    res.send({docid: docid});
+  }
+  catch (err) {
+    console.log(err);
+  }
+});
+
+documentRouter.delete("/collection/delete", (req, res) => {
+  const name = req.body.name;
+  res.set("X-CSE356", "61f9d6733e92a433bf4fc8dd");
+  try {
+    documentService.deleteDocument(name);
+    res.send("success");
+  }
+  catch (err) {
+    console.log(err);
+  }
+});
+
+documentRouter.get("/collection/list", (req, res) => {
+  res.set("X-CSE356", "61f9d6733e92a433bf4fc8dd");
+  try {
+    const docs = documentService.listDocuments();
+    res.send(docs);
+  }
+  catch (err) {
+    console.log(err);
+  }
+});
+
 module.exports = documentRouter;
