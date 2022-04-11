@@ -1,5 +1,6 @@
 const multer = require("multer");
 const fs = require("fs");
+
 /**
  * Set up multer so images are saved to the
  * /uploads directory under a random media ID.
@@ -14,7 +15,7 @@ var storage = multer.diskStorage({
 });
 
 /**
- * Limit the file size to 10MB.
+ * Limit the file size to 10MB and only allow .jpeg and .png files.
  */
 const upload = multer({
   storage: storage,
