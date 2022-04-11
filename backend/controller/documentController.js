@@ -3,42 +3,45 @@ const documentRouter = express.Router();
 const documentService = require("../service/documentService");
 
 //get stream and connect to document
-documentRouter.get("/connect/:id", (req, res) => {
-  const id = req.params.id;
+documentRouter.get("/doc/connect/:docId/:uId", (req, res) => {
+  const docId = req.params.docId;
+  const uId = req.params.uId;
   res.set("X-CSE356", "61f9d6733e92a433bf4fc8dd");
   try {
-    documentService.connectToDocument(id, res);
+    documentService.connectToDocument(docId, uId, res);
   } catch (err) {
     res.status(400).send({ error: err.message });
   }
 });
 
-documentRouter.get("/doc/:id", (req, res) => {
-  const id = req.params.id;
+documentRouter.get("/doc/get/:docId/:uId", (req, res) => {
+  const docId = req.params.docId;
   res.set("X-CSE356", "61f9d6733e92a433bf4fc8dd");
   try {
-    documentService.getDocumentHTML(id, res);
+    documentService.getDocumentHTML(docId, res);
   } catch (err) {
     res.status(400).send({ error: err.message });
   }
 });
 
-documentRouter.post("/op/:id", (req, res) => {
-  const id = req.params.id;
+documentRouter.post("/doc/op/:docId/:uId", (req, res) => {
+  const docId = req.params.docId;
+  const uId = req.params.uId;
   const ops = req.body;
   res.set("X-CSE356", "61f9d6733e92a433bf4fc8dd");
   try {
-    documentService.postOps(id, ops, res);
+    documentService.postOps(docId, uId, ops, res);
   } catch (err) {
     res.status(400).send({ error: err.message });
   }
 });
 
-documentRouter.post("/presence/:id", (req, res) => {
+documentRouter.post("/doc/presence/:docId/:uId", (req, res) => {
+  const docId = req.params.docId;
+  const uId = req.params.uId;
   const range = req.body;
-  const id = req.params.id;
   try {
-    documentService.submitPresenceRange(id, range);
+    documentService.submitPresenceRange(docId, uId, range);
     res.json("success");
   } catch (err) {
     res.status(400).send({ error: err.message });
