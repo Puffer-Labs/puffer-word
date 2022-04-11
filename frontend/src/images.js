@@ -1,3 +1,5 @@
+const MEDIA_URL = "http://localhost:8000/media";
+
 const handleUpload = (quillInstance) => {
   const uploadedImage = document.createElement("input");
   uploadedImage.setAttribute("type", "file");
@@ -9,15 +11,15 @@ const handleUpload = (quillInstance) => {
     const formData = new FormData();
     formData.append("image", file);
 
-    fetch("http://localhost:8000/upload", {
+    fetch(`${MEDIA_URL}/upload`, {
       method: "POST",
       body: formData,
     })
       .then((res) => res.json())
-      .then(({ url }) => {
+      .then(({ mediaid }) => {
         const range = quillInstance.getSelection();
         const position = range ? range.index : quillInstance.getLength();
-        const ops = [{ insert: { image: url } }];
+        const ops = [{ insert: { image: `${MEDIA_URL}/access/${mediaid}` } }];
         if (position) {
           ops.unshift({ retain: position }); // Insert at beginning of list
         }
