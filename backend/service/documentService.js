@@ -221,7 +221,7 @@ const postOps = (docId, uId, ops, res) => {
 const getDocumentHTML = (docId, res) => {
   const document = connection.get("documents", docId);
   document.fetch(() => {
-    if(document.type === null) throw new Error("Document does not exist");
+    if (document.type === null) throw new Error("Document does not exist");
     //try to grab existing document
     const parser = new QuillDeltaToHtmlConverter(document.data.ops, {});
     res.send(parser.convert());
@@ -232,20 +232,27 @@ const getDocumentHTML = (docId, res) => {
  *  * @param {string} name - name of the document
  *  * @param {Response} res - Response object
  *
- * Creates a new document with the given name.
- * TODO: Make name/id save into database less hacky
- * Can make a second call to database to store name, but this will require two total database interactions instead of one
+ * Keeps generating a new Id as long as it is not already in use, before creating a new document.
+ * Creates a one to one mapping with the name in the name collection
+ * Returns the new document ID.
  */
 const createDocument = (name, res) => {
   const connection = ShareDB.sharedb_server.connect();
   const id = generateRandomID();
-  //replace all '~' in name with spaces to avoid parsing errors in db middleware
-  const newName = name.replace(/~/g, " ");
-  const doc = connection.get("documents", newName + "~" + id);
-  doc.fetch(() => {
-    doc.create([{ insert: "" }], "rich-text", () => {
-      res.send({ docid: id });
-    });
+  const doc = connection.get("documents", id);
+  doc.fetch(async () => {
+    if (doc.type === null) {
+      doc.create([{ insert: "" }], "rich-text", () => {
+        res.send({ docid: id });
+      });
+      //insert name into name collection with one to one id
+      await mongoDBClient
+        .db("test")
+        .collection("names")
+        .insertOne({ _id: id, name: name });
+    } else {
+      throw new Error("Document already exists");
+    }
   });
 };
 /**
@@ -264,23 +271,34 @@ const deleteDocument = (id) => {
 
 /**
  * Sends a query for the 10 most recently modified documents that have a _type field (AKA non-deleted documents),
- * in descending order.
+ * in descending order. Each document is one to one related to a record in the 'names'collection, so we have to left outer join them.
+ * The lookup operator performs the left outer join, the project operator is specifying we only want the _id and name fields
  */
 const getDocuments = async () => {
   try {
     let docs = await mongoDBClient
       .db("test")
       .collection("documents")
-      .find({ _type: { $ne: null } })
-      .limit(10)
-      .sort({ "_m.mtime": -1 })
+      .aggregate([
+        {
+          $lookup: {
+            from: "names",
+            localField: "_id",
+            foreignField: "_id",
+            as: "name",
+          },
+        },
+        { $match: { _type: { $exists: true, $ne: null } } },
+        { $limit: 10 },
+        { $sort: { "_m.mtime": -1 } },
+        {
+          $replaceWith: {
+            id: "$_id",
+            name: { $first: "$name.name" },
+          },
+        },
+      ])
       .toArray();
-    docs = docs.map((doc) => {
-      return {
-        id: doc._id,
-        name: doc.name,
-      };
-    });
     return docs;
   } catch (err) {
     console.log(err);

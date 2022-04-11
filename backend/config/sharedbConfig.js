@@ -8,7 +8,6 @@ const sharedb_server = new ShareDB({
 	doNotForwardSendPresenceErrorsToClient: true,
 });
 
-db.use('beforeCreate', beforeCreate);
 const sharedb_connection = sharedb_server.connect();
 const document = sharedb_connection.get("documents", "default");
 document.submitSource = true;
