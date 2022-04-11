@@ -1,4 +1,7 @@
 const ShareDB = require("../config/sharedbConfig");
+const mongoDBClient = require("../config/mongoConfig");
+const generateRandomID = require("../utils/idGenerator");
+const { MongoClient } = require("mongodb");
 const QuillDeltaToHtmlConverter =
   require("quill-delta-to-html").QuillDeltaToHtmlConverter;
 // const document = ShareDB.document;
@@ -222,23 +225,63 @@ const getDocumentHTML = (id, res) => {
   });
 };
 
-const createDocument = (name) => {
+/**
+ *  * @param {string} name - name of the document
+ *  * @param {Response} res - Response object
+ *
+ * Creates a new document with the given name.
+ * TODO: Make name/id save into database less hacky
+ * Can make a second call to database to store name, but this will require two total database interactions instead of one
+ */
+const createDocument = (name, res) => {
   const connection = ShareDB.sharedb_server.connect();
-  const doc = connection.get("documents", name);
+  const id = generateRandomID();
+  //replace all '~' in name with spaces to avoid parsing errors in db middleware
+  const newName = name.replace(/~/g, " ");
+  const doc = connection.get("documents", newName + "~" + id);
   doc.fetch(() => {
-    if (!doc.type) doc.create([{ insert: "" }], "rich-text");
-    else console.log("Document already exists");
+    doc.create([{ insert: "" }], "rich-text", () => {
+      res.send({ docid: id });
+    });
   });
-  return doc.id;
 };
-
-const deleteDocument = (name) => {
+/**
+ * @param {string} id - id of the document to be deleted
+ *
+ * Tombstones the document with the given id
+ */
+const deleteDocument = (id) => {
   const connection = ShareDB.sharedb_server.connect();
-  const doc = connection.get("documents", name);
+  const doc = connection.get("documents", id);
   doc.fetch(() => {
     if (doc.type) doc.del();
     else console.log("Document does not exist");
   });
+};
+
+/**
+ * Sends a query for the 10 most recently modified documents that have a _type field (AKA non-deleted documents),
+ * in descending order.
+ */
+const getDocuments = async () => {
+  try {
+    let docs = await mongoDBClient
+      .db("test")
+      .collection("documents")
+      .find({ _type: { $ne: null } })
+      .limit(10)
+      .sort({ "_m.mtime": -1 })
+      .toArray();
+    docs = docs.map((doc) => {
+      return {
+        id: doc._id,
+        name: doc.name,
+      };
+    });
+    return docs;
+  } catch (err) {
+    console.log(err);
+  }
 };
 
 module.exports = {
@@ -248,4 +291,5 @@ module.exports = {
   submitPresenceRange,
   createDocument,
   deleteDocument,
+  getDocuments,
 };

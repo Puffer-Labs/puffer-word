@@ -49,8 +49,7 @@ documentRouter.post("/collection/create", (req, res) => {
   const name = req.body.name;
   res.set("X-CSE356", "61f9d6733e92a433bf4fc8dd");
   try {
-    const docid = documentService.createDocument(name);
-    res.send({docid: docid});
+    const docid = documentService.createDocument(name, res);
   }
   catch (err) {
     console.log(err);
@@ -58,10 +57,10 @@ documentRouter.post("/collection/create", (req, res) => {
 });
 
 documentRouter.delete("/collection/delete", (req, res) => {
-  const name = req.body.name;
+  const id = req.body.docid;
   res.set("X-CSE356", "61f9d6733e92a433bf4fc8dd");
   try {
-    documentService.deleteDocument(name);
+    documentService.deleteDocument(id);
     res.send("success");
   }
   catch (err) {
@@ -69,10 +68,10 @@ documentRouter.delete("/collection/delete", (req, res) => {
   }
 });
 
-documentRouter.get("/collection/list", (req, res) => {
+documentRouter.get("/collection/list", async (req, res) => {
   res.set("X-CSE356", "61f9d6733e92a433bf4fc8dd");
   try {
-    const docs = documentService.listDocuments();
+    const docs = await documentService.getDocuments();
     res.send(docs);
   }
   catch (err) {
