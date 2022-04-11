@@ -40,19 +40,17 @@ const _generateRandomID = () => {
 };
 
 /**
- * 
+ *
  * @param {Response} res - The response object.
  * @param {string} mediaId - The media ID.
  */
 const getFile = (res, mediaId) => {
-	/**
-	 * Read the file from the /uploads directory.
-	 * The slice removes the /controller/ part of the path.
-	 */
+  /**
+   * Read the file from the /uploads directory.
+   * The slice removes the /controller/ part of the path.
+   */
   const uploadPath =
-    __dirname.split("/").slice(0, -1).join("/") +
-    "/uploads/" +
-		mediaId
+    __dirname.split("/").slice(0, -1).join("/") + "/uploads/" + mediaId;
 
   // Check if the file exists.
   if (fs.existsSync(uploadPath + ".jpeg")) {
@@ -65,6 +63,6 @@ const getFile = (res, mediaId) => {
 };
 
 module.exports = {
-	upload,
-	getFile,
+  upload,
+  getFile,
 };
