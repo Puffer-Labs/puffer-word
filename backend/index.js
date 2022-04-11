@@ -11,6 +11,7 @@ api.use(cors());
 
 const documentController = require("./controller/documentController");
 const mediaController = require("./controller/mediaController");
+const mongoDBClient = require("./config/mongoConfig");
 api.use("/media", mediaController);
 api.use("/", documentController);
 api.get("/", (req, res) => {
@@ -20,3 +21,13 @@ api.get("/", (req, res) => {
 api.listen(port, () => {
 	console.log(`API running on port ${port}`);
 });
+
+process.on("SIGINT", () => {
+  //graceful shutdown, close db connection
+  api_instance.close(() => {
+    mongoDBClient.close();
+    console.log("Server closed. Database instance disconnected");
+    process.exit(0);
+  });
+});
+

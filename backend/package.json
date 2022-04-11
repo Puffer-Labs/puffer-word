@@ -13,6 +13,7 @@
     "@teamwork/websocket-json-stream": "^2.0.0",
     "cors": "^2.8.5",
     "express": "^4.17.3",
+    "mongodb": "^4.5.0",
     "morgan-body": "^2.6.6",
     "multer": "^1.4.4",
     "quill-delta-to-html": "^0.12.0",

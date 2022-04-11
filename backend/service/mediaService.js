@@ -1,5 +1,6 @@
 const multer = require("multer");
 const fs = require("fs");
+const generateRandomID = require("../utils/idGenerator");
 
 /**
  * Set up multer so images are saved to the
@@ -10,7 +11,7 @@ var storage = multer.diskStorage({
     cb(null, "./uploads/");
   },
   filename: function (req, file, cb) {
-    cb(null, `${_generateRandomID()}.${file.originalname.split(".").pop()}`);
+    cb(null, `${generateRandomID()}.${file.originalname.split(".").pop()}`);
   },
 });
 
@@ -28,16 +29,6 @@ const upload = multer({
   },
 });
 
-/**
- *
- * @returns {string} A random string of length 22.
- */
-const _generateRandomID = () => {
-  return (
-    Math.random().toString(36).substring(2, 15) +
-    Math.random().toString(36).substring(2, 15)
-  );
-};
 
 /**
  *
