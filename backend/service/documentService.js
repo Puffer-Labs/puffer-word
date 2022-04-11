@@ -7,8 +7,6 @@ const QuillDeltaToHtmlConverter =
 // Check global structures after disconnects
 // Fix initial connection cursor placement
 
-
-
 // This table keeps track of the active connections made to it, where each document name, as a key,
 // has a table of id|connection key-value pairs as its value.
 // ex for one active document, activeDocuments["default"]
@@ -80,7 +78,7 @@ const setupPresence = (id, res) => {
     presence.create(id);
 
     // Emit initial cursor position for other clients
-    presence.localPresences[id].submit({index:0, length: 0}, (err) => {
+    presence.localPresences[id].submit({ index: 0, length: 0 }, (err) => {
       if (err) console.error(err);
       else console.log("Initial presence submission received");
     });
@@ -224,9 +222,30 @@ const getDocumentHTML = (id, res) => {
   });
 };
 
+const createDocument = (name) => {
+  const connection = ShareDB.sharedb_server.connect();
+  const doc = connection.get("documents", name);
+  doc.fetch(() => {
+    if (!doc.type) doc.create([{ insert: "" }], "rich-text");
+    else console.log("Document already exists");
+  });
+  return doc.id;
+};
+
+const deleteDocument = (name) => {
+  const connection = ShareDB.sharedb_server.connect();
+  const doc = connection.get("documents", name);
+  doc.fetch(() => {
+    if (doc.type) doc.del();
+    else console.log("Document does not exist");
+  });
+};
+
 module.exports = {
   connectToDocument,
   getDocumentHTML,
   postOps,
   submitPresenceRange,
+  createDocument,
+  deleteDocument,
 };
