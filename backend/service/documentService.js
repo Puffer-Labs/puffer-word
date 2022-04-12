@@ -1,11 +1,7 @@
 const ShareDB = require("../config/sharedbConfig");
 const mongoDBClient = require("../config/mongoConfig");
-<<<<<<< HEAD
 const generateRandomID = require("../utils/idGenerator")
 const ActiveDocumentPresence = require("./activeDocuments");
-=======
-const generateRandomID = require("../utils/idGenerator");
->>>>>>> 8126200 (updated front end to use docId & uId)
 const QuillDeltaToHtmlConverter =
   require("quill-delta-to-html").QuillDeltaToHtmlConverter;
 // const document = ShareDB.document;
