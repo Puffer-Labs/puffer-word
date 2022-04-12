@@ -1,4 +1,4 @@
-const MEDIA_URL = "http://localhost:8000/media";
+const MEDIA_URL = "http://10.1.239.193:8000/media";
 
 const handleUpload = (quillInstance) => {
   const uploadedImage = document.createElement("input");
