@@ -21,6 +21,7 @@ const handleLogout = () => {
        navigate('/');
    }) 
 }
+
 const documentMapping = docs.map((document, index) => 
     <a href='#' key={index + document} >{document} </a>
 );

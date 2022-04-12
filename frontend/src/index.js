@@ -2,6 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 import "./index.css";
 import App from "./App";
+import Login from './Login'
 import reportWebVitals from "./reportWebVitals";
 import {BrowserRouter} from "react-router-dom"
 import { CookiesProvider } from "react-cookie";
@@ -11,6 +12,7 @@ ReactDOM.render(
     <CookiesProvider>
       <App/>
     </CookiesProvider>
+
   </React.StrictMode>,
   document.getElementById("root")
 );
