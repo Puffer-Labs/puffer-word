@@ -1,6 +1,7 @@
 const ShareDB = require("../config/sharedbConfig");
 const mongoDBClient = require("../config/mongoConfig");
-const generateRandomID = require("../utils/idGenerator");
+const generateRandomID = require("../utils/idGenerator")
+const ActiveDocumentPresence = require("./activeDocuments");
 const QuillDeltaToHtmlConverter =
   require("quill-delta-to-html").QuillDeltaToHtmlConverter;
 // const document = ShareDB.document;
@@ -13,7 +14,7 @@ const QuillDeltaToHtmlConverter =
 // has a table of id|connection key-value pairs as its value.
 // ex for one active document, activeDocuments["default"]
 // { "default": { "connection1": connectionObj, "connection2": connectionObj } }
-let activeDocuments = {};
+const activeDocumentPresence = new ActiveDocumentPresence();
 
 /**
  * Each client should have their own connection to a specific document.
@@ -40,16 +41,13 @@ const connectToDocument = (docId, uId, res) => {
       throw new Error("Document does not exist");
 
     // Add client ID to active connections
-    if (!addNewConnection(docId, uId, res)) return;
+    if (!activeDocumentPresence.addNewConnection(docId, uId)) {
+      res.sendStatus(400);
+    }
 
-    // Set appropriate headers
-    res.set("X-Accel-Buffering", "no"); // Disable nginx buffering
-    res.set("Content-Type", "text/event-stream");
-    res.write(
-      "data: " + JSON.stringify({ content: document.data.ops }) + "\n\n"
-    ); // Write initial OPs to the stream
+    setUpConnectedDocumentResponse(res, { docId, uId, ops: document.data.ops });
 
-    setupPresence(docId, uId, res);
+    activeDocumentPresence.setupPresence(ShareDB.sharedb_server.connect, docId, uId, res);
 
     document.on("op", (op, source) => {
       // If the incoming op is from the client, ignore it
@@ -58,6 +56,19 @@ const connectToDocument = (docId, uId, res) => {
     console.log("Connected to document");
   });
 };
+
+const setUpConnectedDocumentResponse = (res, data) => {
+    res.on("close", () => {
+      activeDocumentPresence.removeConnection(data.docId, data.uId)
+      res.end();
+    });
+    // Set appropriate headers
+    res.set("X-Accel-Buffering", "no"); // Disable nginx buffering
+    res.set("Content-Type", "text/event-stream");
+    res.write(
+      "data: " + JSON.stringify({ content: data.ops }) + "\n\n"
+    ); // Write initial OPs to the stream
+}
 
 /**
  *
