@@ -5,6 +5,7 @@ require('dotenv').config();
 
 // mongoose.connect(process.env.DB_URL);
 mongoose.connect("mongodb://localhost:27017/auth");
+
 mongoose.connection.on('connected', () => {
 	console.log('Connected to MongoDB');
 });
