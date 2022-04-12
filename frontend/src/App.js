@@ -4,6 +4,9 @@ import QuillCursors from "quill-cursors";
 import cursors from "./cursors";
 import images from "./images";
 import "quill/dist/quill.snow.css";
+const LOCALHOST_API = "http://localhost:8000";
+const PUBLIC_API = "http://10.1.239.193:8000";
+const API = PUBLIC_API;
 
 //generate random client id
 const getId = () => {
@@ -44,9 +47,7 @@ const App = () => {
     cursors.init(quill);
 
     // Connect to the event source to listen for incoming operation changes
-    const connection = new EventSource(
-      "http://localhost:8000/doc/connect/" + docId + "/" + id
-    );
+    const connection = new EventSource(`${API}/doc/connect/${docId}/${id}`);
 
     // server -> client
     connection.onmessage = (event) => {
@@ -75,7 +76,8 @@ const App = () => {
 
       if (source === "user") {
         const op = delta.ops;
-        fetch("http://localhost:8000/doc/op/" + docId + "/" + id, {
+        
+        fetch(`${API}/doc/op/${docId}/${id}`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -102,7 +104,7 @@ const App = () => {
     return function (range, oldRange, source) {
       if (range && source === "user") {
         console.log(range);
-        fetch("http://localhost:8000/doc/presence/" + docId + "/" + id, {
+        fetch(`${API}/doc/presence/${docId}/${id}`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

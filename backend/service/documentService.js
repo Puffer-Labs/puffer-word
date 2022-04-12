@@ -47,7 +47,7 @@ const connectToDocument = (docId, uId, res) => {
 
     setUpConnectedDocumentResponse(res, { docId, uId, ops: document.data.ops });
 
-    activeDocumentPresence.setupPresence(ShareDB.sharedb_server.connect, docId, uId, res);
+    activeDocumentPresence.setupPresence(docId, uId, res);
 
     document.on("op", (op, source) => {
       // If the incoming op is from the client, ignore it
@@ -70,141 +70,9 @@ const setUpConnectedDocumentResponse = (res, data) => {
     ); // Write initial OPs to the stream
 }
 
-/**
- *
- * @param {Doc} document - Document instance
- * @param {string} docId - Document ID
- * @param {string} uId - Client ID
- * Creates a LocalPresence for the client.
- */
-const setupPresence = (docId, uId, res) => {
-  // Setup presence
-  const connection = ShareDB.sharedb_server.connect();
-  const doc = connection.get("documents", docId);
-  doc.fetch(() => {
-    const presence = connection.getDocPresence("documents", docId);
-    activeDocuments[docId][uId] = connection;
-
-    presence.subscribe(function (err) {
-      if (err) console.error(err);
-    });
-
-    // Setup LocalPresence
-    presence.create(uId);
-
-    // Emit initial cursor position for other clients
-    presence.localPresences[uId].submit({ index: 0, length: 0 }, (err) => {
-      if (err) console.error(err);
-      else console.log("Initial presence submission received");
-    });
-
-    for (const key in activeDocuments[docId]) {
-      if (key !== uId) {
-        const remotePresence = activeDocuments[docId][key].getDocPresence(
-          "documents",
-          docId
-        );
-        presence.remotePresences[key] =
-          remotePresence.localPresences[key].value;
-      }
-    }
-
-    //For each remote presence key, write their value to client
-    Object.keys(presence.remotePresences).forEach((key) => {
-      if (presence.remotePresences[key]) {
-        res.write(
-          "data: " +
-            JSON.stringify({
-              cursor: {
-                connClosed: false,
-                id: key,
-                range: presence.remotePresences[key].value,
-              },
-            }) +
-            "\n\n"
-        );
-      }
-    });
-
-    presence.on("receive", (id, range) => {
-      let connClosed = false;
-      if (!range) connClosed = true;
-
-      console.log("Range at `receive`", range);
-      res.write(
-        `data: ${JSON.stringify({
-          cursor: {
-            connClosed,
-            id: id,
-            range: range,
-          },
-        })}\n\n`
-      );
-    });
-  });
-};
-
-/**
- * @param {string} docId - Document ID
- * @param {string} uId - Client ID
- * @param {Range} range - Position of the cursor and its selection
- * Updates the cursor position for the client.
- */
 const submitPresenceRange = (docId, uId, range) => {
-  const connection = activeDocuments[docId][uId];
-  const doc = connection.get("documents", docId);
-  doc.fetch(() => {
-    const presence = connection.getDocPresence("documents", docId);
-    /**
-     * A presence has a Set of local presences. Each local presence is
-     * identified by a unique ID, which is the client's ID.
-     * Here, we get the local presence for the client and then update its range.
-     * This will then notify all other clients of this client's new cursor position.
-     */
-    console.log("Range before callback", range);
-    presence.localPresences[uId].submit(range, (err) => {
-      if (err) console.error(err);
-      else console.log("Range at `submit`", range);
-    });
-  });
-};
-
-/**
- * @param {string} docId - Document ID
- * @param {string} uId - Client ID
- * @param {Response} res - response object
- *
- * If the client is not already connected, add them to the active_connections array.
- * If the client is already connected but they connect again, return a 400 HTTP error.
- * If the client disconnects, remove them from the active_connections array and end the event stream.
- *
- */
-const addNewConnection = (docId, uId, res) => {
-  //If this document is currently active && a client with this id is already connected, do not accept connection
-  if (
-    activeDocuments[docId] !== undefined &&
-    activeDocuments[docId][uId] !== undefined
-  ) {
-    res.sendStatus(400);
-    return false;
-  } else {
-    //if document is not active, create key for it
-    if (activeDocuments[docId] === undefined) activeDocuments[docId] = {};
-    res.on("close", () => {
-      const presence = activeDocuments[docId][uId].getDocPresence(
-        "documents",
-        docId
-      );
-      presence.destroy();
-      delete activeDocuments[docId][uId];
-      //if active document has no more connections, delete it
-      if (Object.keys(activeDocuments[docId]).length === 0)
-        delete activeDocuments[docId];
-      res.end();
-    });
-  }
-  return true;
-};
+  activeDocumentPresence.submitPresenceRange(docId, uId, range);
+}
 
 /**
  * @param {string} docId - Document ID
