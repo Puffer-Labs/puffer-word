@@ -21,6 +21,8 @@ const App = () => {
   React.useEffect(() => {
     Quill.register("modules/cursors", QuillCursors);
     const id = getId();
+    //get docId from this component's url
+    const docId = window.location.pathname.split("/").pop();
     const options = {
       theme: "snow",
       modules: {
@@ -45,7 +47,9 @@ const App = () => {
     cursors.init(quill);
 
     // Connect to the event source to listen for incoming operation changes
-    const connection = new EventSource("http://192.168.1.250:8000/connect/" + id);
+    const connection = new EventSource(
+      "http://localhost:8000/doc/connect/" + docId + "/" + id
+    );
 
     // server -> client
     connection.onmessage = (event) => {
@@ -74,7 +78,7 @@ const App = () => {
 
       if (source === "user") {
         const op = delta.ops;
-        fetch("http://192.168.1.250:8000/op/" + id, {
+        fetch("http://localhost:8000/doc/op/" + docId + "/" + id, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -86,7 +90,7 @@ const App = () => {
       }
     });
 
-    quill.on("selection-change", selectionChangeHandler(id));
+    quill.on("selection-change", selectionChangeHandler(docId, id));
     quill
       .getModule("toolbar")
       .addHandler("image", () => images.handleUpload(quill));
@@ -98,11 +102,11 @@ const App = () => {
   }, []);
 >>>>>>> 410457f (added image upload support)
 
-  function selectionChangeHandler(id) {
+  function selectionChangeHandler(docId, id) {
     return function (range, oldRange, source) {
       if (range && source === "user") {
         console.log(range);
-        fetch("http://192.168.1.250:8000/presence/" + id, {
+        fetch("http://localhost:8000/doc/presence/" + docId + "/" + id, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

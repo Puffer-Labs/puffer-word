@@ -1,7 +1,6 @@
 const ShareDB = require("../config/sharedbConfig");
 const mongoDBClient = require("../config/mongoConfig");
 const generateRandomID = require("../utils/idGenerator");
-const { MongoClient } = require("mongodb");
 const QuillDeltaToHtmlConverter =
   require("quill-delta-to-html").QuillDeltaToHtmlConverter;
 // const document = ShareDB.document;
