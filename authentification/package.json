@@ -20,7 +20,8 @@
     "mongoose": "^6.2.10",
     "passport": "^0.5.2",
     "passport-local": "^1.0.0",
-    "react-cookie": "^4.1.1"
+    "react-cookie": "^4.1.1",
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
     "nodemon": "^2.0.15"
