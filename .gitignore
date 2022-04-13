@@ -41,3 +41,5 @@ packages/react-devtools-timeline/dist
 
 # PUFFER WORD
 uploads/
+
+package-lock.json

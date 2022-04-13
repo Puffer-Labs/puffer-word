@@ -35,3 +35,12 @@ process.on("SIGINT", () => {
   process.exit();
 });
 
+process.on("SIGINT", () => {
+  //graceful shutdown, close db connection
+  api_instance.close(() => {
+    mongoDBClient.close();
+    console.log("Server closed. Database instance disconnected");
+  });
+  process.exit();
+});
+
