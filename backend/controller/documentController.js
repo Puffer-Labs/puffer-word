@@ -27,10 +27,14 @@ documentRouter.get("/doc/get/:docId/:uId", (req, res) => {
 documentRouter.post("/doc/op/:docId/:uId", (req, res) => {
   const docId = req.params.docId;
   const uId = req.params.uId;
-  const ops = req.body;
+  const data = req.body;
   res.set("X-CSE356", "61f9d6733e92a433bf4fc8dd");
   try {
-    documentService.postOps(docId, uId, ops, res);
+    if (documentService.postOp(docId, uId, data, res)) {
+      res.status(200).send({ status: "ok"});
+    } else {
+      res.status(400).send({ status: "retry"})
+    }
   } catch (err) {
     res.status(400).send({ error: err.message });
   }

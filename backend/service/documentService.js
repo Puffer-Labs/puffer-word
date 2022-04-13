@@ -50,10 +50,8 @@ const connectToDocument = (docId, uId, res) => {
     activeDocumentPresence.setupPresence(docId, uId, res);
 
     document.on("op", (op, source) => {
-      // If the incoming op is from the client, don't process it as new delta
+      // If the incoming op is from the client, ignore it
       if (source !== uId) res.write("data: " + JSON.stringify(op) + "\n\n");
-      // Confirm to posting client that the op was received
-      else res.write("data: " + JSON.stringify({ack: op}) + "\n\n");
     });
     console.log("Connected to document");
   });
@@ -84,11 +82,15 @@ const submitPresenceRange = (docId, uId, range) => {
  *
  * Goes through the ops array and submits them to the document.
  */
-const postOps = (docId, uId, ops, res) => {
+const postOp = (docId, uId, data) => {
+  const {op, version} = data;
   const document = ShareDB.sharedb_connection.get("documents", docId);
   document.fetch(() => {
-    ops.map((op) => document.submitOp(op, { source: uId }));
-    res.json({ success: true });
+    if (version != document.version) {
+      return false;
+    }
+    document.submitOp(op, { source: uId });
+    return true;
   });
 };
 
@@ -188,7 +190,7 @@ const getDocuments = async () => {
 module.exports = {
   connectToDocument,
   getDocumentHTML,
-  postOps,
+  postOp,
   submitPresenceRange,
   createDocument,
   deleteDocument,
