@@ -3,7 +3,6 @@ import ReactDOM from "react-dom";
 import "./index.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
-<<<<<<< HEAD
 import {BrowserRouter} from "react-router-dom"
 import { CookiesProvider } from "react-cookie";
 
@@ -14,12 +13,6 @@ ReactDOM.render(
     </CookiesProvider>
 
 
-=======
-
-ReactDOM.render(
-  <React.StrictMode>
-    <App/>
->>>>>>> 1fcc3d0 (local presence correctly emits notification after presence has been updated)
   </React.StrictMode>,
   document.getElementById("root")
 );

@@ -22,12 +22,13 @@ let cursorModule;
  * If there is no cursor in the cursors dictionary, then we create a new cursor.
  * Otherwise, we know it is an existing client cursor, so we need to process the event.
  */
-const processCursorEvent = (cursorData) => {
+const processCursorEvent = (cursorData, add, remove) => {
   const clientCursor = cursors[cursorData.id];
-  if (!clientCursor) {
+  if (!cursorData.connClosed && !clientCursor) {
     create(cursorData.id, cursorData.id);
+    add(cursorData.id);
   } else {
-    _processExistingClientCursor(cursorData, clientCursor);
+    _processExistingClientCursor(cursorData, clientCursor, remove);
   }
 };
 
@@ -40,9 +41,10 @@ const processCursorEvent = (cursorData) => {
  * 1. Update some remote client's cursor
  * 2. Disconnect a remote client's cursor
  */
-const _processExistingClientCursor = (cursorData, clientCursor) => {
+const _processExistingClientCursor = (cursorData, clientCursor, remove) => {
   if (cursorData.connClosed) {
     disconnect(clientCursor.id);
+    remove(clientCursor.id);
   } else {
     move(clientCursor.id, cursorData.range);
   }
@@ -105,6 +107,8 @@ const _generateRandomHexColor = () => {
   return "#" + Math.floor(Math.random() * 16777215).toString(16);
 };
 
+const getCursors = () => cursors;
+
 /**
  *
  * @returns {Tuple} - A random name and hex color
@@ -131,4 +135,5 @@ module.exports = {
   create,
   disconnect,
   move,
+  getCursors,
 };
