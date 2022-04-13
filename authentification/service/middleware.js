@@ -12,6 +12,7 @@ const passport = require("../config/passportConfig");
 
 const isLoggedIn = (req, res, next) => {
   if (req.session.passport) {
+    console.log("exiting isLoggedIn");
     next();
   } else {
     res.status(401).send("You must be logged in to view this page");
@@ -66,16 +67,11 @@ const logout = (req, res, next) => {
 
 const isVerified = (req, res, next) => {
   if (req.user.status) {
+    console.log("hit");
     next();
   } else {
     res.status(401).send("You must verify your account");
   }
-};
-
-const isLoggedAndVerified = (req, res, next) => {
-  isLoggedIn(req, res, next);
-  isVerified(req, res, next);
-  next();
 };
 
 module.exports = {
@@ -83,5 +79,4 @@ module.exports = {
   logout,
   authorize,
   isVerified,
-  isLoggedAndVerified,
 };

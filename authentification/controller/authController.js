@@ -24,9 +24,13 @@ router.post("/login", middleware.authorize, (req, res) => {
   res.status(200).send({ name: req.user.username });
 });
 
-router.get("/me", middleware.isLoggedAndVerified, (req, res) => {
-  res.status(200).send({ me: req.user, session: req.session });
-});
+router.get(
+  "/me",
+  [middleware.isLoggedIn, middleware.isVerified],
+  (req, res) => {
+    res.status(200).send({ me: req.user, session: req.session });
+  }
+);
 
 router.get("/users/verify/:confirmation", (req, res) => {
   User.findOne({ confirmationCode: req.params.confirmation })
@@ -45,13 +49,17 @@ router.get("/users/verify/:confirmation", (req, res) => {
     .catch((e) => console.log("error", e));
 });
 
-router.get("/logout", middleware.isLoggedIn, middleware.logout, (req, res) => {
-  console.log(req.session);
-  req.session.destroy(function (err) {
-    res.clearCookie("connect.sid");
-    res.clearCookie("user");
-    res.status(200).send({ msg: "logged out" });
-  });
-});
+router.get(
+  "/logout",
+  [middleware.isLoggedIn, middleware.logout],
+  (req, res) => {
+    console.log(req.session);
+    req.session.destroy(function (err) {
+      res.clearCookie("connect.sid");
+      res.clearCookie("user");
+      res.status(200).send({ msg: "logged out" });
+    });
+  }
+);
 
 module.exports = router;
