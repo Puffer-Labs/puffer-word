@@ -50,9 +50,8 @@ const connectToDocument = (docId, uId, res) => {
     activeDocumentPresence.setupPresence(docId, uId, res);
 
     document.on("op", (op, source) => {
-      // If the incoming op is from the client, don't process it as new delta
-      if (source !== uId) res.write("data: " + JSON.stringify(op) + "\n\n");
-      // Confirm to posting client that the op was received
+      // If the incoming op is from the client, ignore it
+      if (source !== uId) res.write("data: " + JSON.stringify({op}) + "\n\n");
       else res.write("data: " + JSON.stringify({ack: op}) + "\n\n");
     });
     console.log("Connected to document");
@@ -84,11 +83,16 @@ const submitPresenceRange = (docId, uId, range) => {
  *
  * Goes through the ops array and submits them to the document.
  */
-const postOps = (docId, uId, ops, res) => {
+const postOp = (docId, uId, data, res) => {
+  const {op, version} = data;
   const document = ShareDB.sharedb_connection.get("documents", docId);
   document.fetch(() => {
-    ops.map((op) => document.submitOp(op, { source: uId }));
-    res.json({ success: true });
+    if (version != document.version) {
+      res.status(400).send({ status: "retry"})
+    } else {
+      document.submitOp(op, { source: uId });
+      res.status(200).send({ status: "ok"});
+    }
   });
 };
 
@@ -98,8 +102,12 @@ const postOps = (docId, uId, ops, res) => {
  *
  * Returns the document as HTML using the QuillDeltaToHtmlConverter.
  */
-const getDocumentHTML = (docId, res) => {
-  const document = connection.get("documents", docId);
+const getDocumentHTML = (docId, uId, res) => {
+  if (!activeDocumentPresence.activeDocuments[docId][uId]) {
+    throw new Error("User not connected to document");
+  }
+
+  const document = ShareDB.sharedb_connection.get("documents", docId);
   document.fetch(() => {
     if (document.type === null) throw new Error("Document does not exist");
     //try to grab existing document
@@ -188,7 +196,7 @@ const getDocuments = async () => {
 module.exports = {
   connectToDocument,
   getDocumentHTML,
-  postOps,
+  postOp,
   submitPresenceRange,
   createDocument,
   deleteDocument,

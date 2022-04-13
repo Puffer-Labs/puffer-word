@@ -1,3 +1,5 @@
+*.env
+package-lock.json
 .DS_STORE
 node_modules
 scripts/flow/*/.flowconfig
@@ -39,3 +41,5 @@ packages/react-devtools-timeline/dist
 
 # PUFFER WORD
 uploads/
+
+package-lock.json

@@ -1,32 +1,20 @@
 import React from "react";
-import { Routes, Route, Outlet, Link, BrowserRouter } from "react-router-dom";
-import Auth from "./Auth";
-import Documents from "./Documents";
-import Document from "./Document";
-import ProtectedRoute from "./ProtectedRoute";
+import Quill from "quill";
+import QuillCursors from "quill-cursors";
+import cursors from "./cursors";
+import images from "./images";
+import "quill/dist/quill.snow.css";
+const LOCALHOST_API = "http://localhost:8080/proxy";
+const PUBLIC_API = "http://10.1.239.193:8000";
+const API = LOCALHOST_API;
 
-export default function App() {
+//generate random client id
+const getId = () => {
   return (
-    <div>
-      <Auth/>
-      {/* <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<ProtectedRoute />}>
-            <Route exact path="/" element={<Documents />} />
-          </Route>
-          <Route path="/login" element={<Auth />}></Route>
-          <Route path="/documents/id" element={<ProtectedRoute />}>
-            <Route exact path="/documents/id" element={<Document />} />
-          </Route>
-          <Route path="/documents" element={<ProtectedRoute />}>
-            <Route exact path="/documents" element={<Documents />} />
-          </Route>
-        </Routes>
-      </BrowserRouter> */}
-      <Document/>
-    </div>
+    "_" +
+    Math.random().toString(36).substring(2, 15) +
+    Math.random().toString(36).substring(2, 15)
   );
-<<<<<<< HEAD
 };
 
 const App = () => {
@@ -35,6 +23,7 @@ const App = () => {
 
   React.useEffect(() => {
     Quill.register("modules/cursors", QuillCursors);
+    let version = 0;
     //get docId from this component's url
     const docId = window.location.pathname.split("/").pop();
     const options = {
@@ -61,7 +50,7 @@ const App = () => {
     cursors.init(quill);
 
     // Connect to the event source to listen for incoming operation changes
-    const connection = new EventSource(`${API}/doc/connect/${docId}/${id}`);
+    const connection = new EventSource(`${API}/doc/connect/${docId}/${id}`, {withCredentials: true});
 
     // server -> client
     connection.onmessage = (event) => {
@@ -77,8 +66,13 @@ const App = () => {
         cursors.processCursorEvent(data, addToList, removeFromList);
       } else if (data.content) {
         quill.setContents(data.content);
-      } else {
+        version = data.version;
+      } else if (data.ack) {
+        version += 1
+      }
+      else {
         quill.updateContents(data.op);
+        version += 1
       }
     };
 
@@ -94,9 +88,11 @@ const App = () => {
         fetch(`${API}/doc/op/${docId}/${id}`, {
           method: "POST",
           headers: {
+            "Accept": "application/json",
             "Content-Type": "application/json",
           },
-          body: JSON.stringify([op]),
+          credentials: "include",
+          body: JSON.stringify({op, version: version}),
         }).then((res) => {
           // console.log(res);
         });
@@ -135,6 +131,7 @@ const App = () => {
           headers: {
             "Content-Type": "application/json",
           },
+          credentials: "include",
           body: JSON.stringify(range),
         }).then((res) => {
           console.log(res);
@@ -161,6 +158,3 @@ const App = () => {
 };
 
 export default App;
-=======
-}
->>>>>>> 2b52086a9a51c75aa2be0d339df751ad714abd57
