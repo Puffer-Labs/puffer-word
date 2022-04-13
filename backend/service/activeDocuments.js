@@ -93,7 +93,7 @@ class ActiveDocumentPresence {
         let connClosed = false;
         if (!range) connClosed = true;
 
-        console.log("Range at `receive`", range);
+        console.log(`Range received: ${JSON.stringify(range)} for ${id}`);
         res.write(
           `data: ${JSON.stringify({
             cursor: {
