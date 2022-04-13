@@ -83,15 +83,16 @@ const submitPresenceRange = (docId, uId, range) => {
  *
  * Goes through the ops array and submits them to the document.
  */
-const postOp = (docId, uId, data) => {
+const postOp = (docId, uId, data, res) => {
   const {op, version} = data;
   const document = ShareDB.sharedb_connection.get("documents", docId);
   document.fetch(() => {
     if (version != document.version) {
-      return false;
+      res.status(400).send({ status: "retry"})
+    } else {
+      document.submitOp(op, { source: uId });
+      res.status(200).send({ status: "ok"});
     }
-    document.submitOp(op, { source: uId });
-    return true;
   });
 };
 

@@ -1,11 +1,13 @@
 const express = require('express');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 const parser = require('morgan-body');
 const api = express();
 const port = 8000;
 
 api.use(express.json());
 api.use(express.urlencoded({ extended: true }));
+api.use(cookieParser());
 api.use(cors());
 // parser(api);
 
@@ -14,7 +16,9 @@ const mediaController = require("./controller/mediaController");
 const mongoDBClient = require("./config/mongoConfig");
 api.use("/media", mediaController);
 api.use("/", documentController);
-api.get("/", (req, res) => {
+
+api.get("/fart", (req, res) => {
+  console.log(req.cookies);
   res.send("Hello World!");
 });
 
@@ -24,7 +28,7 @@ api.listen(port, () => {
 
 process.on("SIGINT", () => {
   //graceful shutdown, close db connection
-  api_instance.close(() => {
+  api.close(() => {
     mongoDBClient.close();
     console.log("Server closed. Database instance disconnected");
   });

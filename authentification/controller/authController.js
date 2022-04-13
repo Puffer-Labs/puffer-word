@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const proxy = require('express-http-proxy');
 const passport = require('../config/passportConfig');
 const authService = require('../service/authService');
 const middleware = require('../service/middleware');
@@ -25,7 +26,7 @@ router.post('/users/create', (req, res) => {
 router.post('/login', middleware.authorize, (req, res) => {
 	res.cookie('user', req.user.username, {
 		path: '/',
-		maxAge: 10 * 1000,
+		maxAge: 10 * 1000 * 10000,
 		sameSite: true,
 		secure: false
 	});

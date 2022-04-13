@@ -32,11 +32,7 @@ documentRouter.post("/doc/op/:docId/:uId", (req, res) => {
   console.log(data);
   res.set("X-CSE356", "61f9d6733e92a433bf4fc8dd");
   try {
-    if (documentService.postOp(docId, uId, data, res)) {
-      res.status(200).send({ status: "ok"});
-    } else {
-      res.status(400).send({ status: "retry"})
-    }
+    documentService.postOp(docId, uId, data, res)
   } catch (err) {
     res.status(400).send({ error: err.message });
   }
