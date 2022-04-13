@@ -1,14 +1,7 @@
 /**
  * Functions for dealing with cursors and cursor events.
  */
-
-/**
- *
- * @param {EventData} data - Incoming event data
- * @param {string} id - Local Client ID
- * @returns True if the event is a cursor event, false otherwise
- */
-const isRemoteCursorEvent = (data, id) => data.cursor && data.cursor.id !== id;
+const isRemoteCursorEvent = (data, id) => data.cursor !== undefined && data.id !== id;
 
 // Maps the cursor id to the cursor object.
 const cursors = {};
@@ -22,13 +15,14 @@ let cursorModule;
  * If there is no cursor in the cursors dictionary, then we create a new cursor.
  * Otherwise, we know it is an existing client cursor, so we need to process the event.
  */
-const processCursorEvent = (cursorData, add, remove) => {
-  const clientCursor = cursors[cursorData.id];
-  if (!cursorData.connClosed && !clientCursor) {
-    create(cursorData.id, cursorData.id);
-    add(cursorData.id);
+const processCursorEvent = (data, add, remove) => {
+  const clientCursor = cursors[data.id];
+  console.log(data);
+  if (data.cursor != null && !clientCursor) {
+    create(data.id, data.id);
+    add(data.id);
   } else {
-    _processExistingClientCursor(cursorData, clientCursor, remove);
+    _processExistingClientCursor(data,remove);
   }
 };
 
@@ -41,12 +35,14 @@ const processCursorEvent = (cursorData, add, remove) => {
  * 1. Update some remote client's cursor
  * 2. Disconnect a remote client's cursor
  */
-const _processExistingClientCursor = (cursorData, clientCursor, remove) => {
-  if (cursorData.connClosed) {
-    disconnect(clientCursor.id);
-    remove(clientCursor.id);
+const _processExistingClientCursor = (data, remove) => {
+  if (data.cursor == null) {
+    disconnect(data.id);
+    remove(data.id);
   } else {
-    move(clientCursor.id, cursorData.range);
+    const index = data.cursor.index;
+    const length = data.cursor.length;
+    move(data.id, {index, length});
   }
 };
 

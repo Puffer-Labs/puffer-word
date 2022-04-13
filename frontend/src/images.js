@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-const MEDIA_URL = "http://localhost:8000/media";
-=======
-const MEDIA_URL = "http://10.1.239.193:8000/media";
->>>>>>> 3227011a9c2d34375c65b9adbb1a6e6f5cf2a5b8
+const MEDIA_URL = "http://LOCALHOST:8000/media";
 
 const handleUpload = (quillInstance) => {
   const uploadedImage = document.createElement("input");

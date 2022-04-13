@@ -49,13 +49,7 @@ const App = () => {
     cursors.init(quill);
 
     // Connect to the event source to listen for incoming operation changes
-<<<<<<< HEAD
-    const connection = new EventSource(
-      "http://localhost:8000/doc/connect/" + docId + "/" + id
-    );
-=======
     const connection = new EventSource(`${API}/doc/connect/${docId}/${id}`);
->>>>>>> 3227011a9c2d34375c65b9adbb1a6e6f5cf2a5b8
 
     // server -> client
     connection.onmessage = (event) => {
@@ -68,11 +62,11 @@ const App = () => {
       const data = JSON.parse(event.data);
       console.log("On message", data);
       if (cursors.isRemoteCursorEvent(data, id)) {
-        cursors.processCursorEvent(data.cursor, addToList, removeFromList);
+        cursors.processCursorEvent(data, addToList, removeFromList);
       } else if (data.content) {
         quill.setContents(data.content);
       } else {
-        data.map((op) => quill.updateContents(op));
+        quill.updateContents(data.op);
       }
     };
 
@@ -84,12 +78,8 @@ const App = () => {
 
       if (source === "user") {
         const op = delta.ops;
-<<<<<<< HEAD
-        fetch("http://localhost:8000/doc/op/" + docId + "/" + id, {
-=======
         
         fetch(`${API}/doc/op/${docId}/${id}`, {
->>>>>>> 3227011a9c2d34375c65b9adbb1a6e6f5cf2a5b8
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -128,11 +118,7 @@ const App = () => {
     return function (range, oldRange, source) {
       if (range && source === "user") {
         console.log(range);
-<<<<<<< HEAD
-        fetch("http://localhost:8000/doc/presence/" + docId + "/" + id, {
-=======
         fetch(`${API}/doc/presence/${docId}/${id}`, {
->>>>>>> 3227011a9c2d34375c65b9adbb1a6e6f5cf2a5b8
           method: "POST",
           headers: {
             "Content-Type": "application/json",
