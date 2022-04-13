@@ -64,4 +64,24 @@ const logout = (req, res, next) => {
   next();
 };
 
-module.exports = { isLoggedIn, logout, authorize };
+const isVerified = (req, res, next) => {
+  if (req.user.status) {
+    next();
+  } else {
+    res.status(401).send("You must verify your account");
+  }
+};
+
+const isLoggedAndVerified = (req, res, next) => {
+  isLoggedIn(req, res, next);
+  isVerified(req, res, next);
+  next();
+};
+
+module.exports = {
+  isLoggedIn,
+  logout,
+  authorize,
+  isVerified,
+  isLoggedAndVerified,
+};
