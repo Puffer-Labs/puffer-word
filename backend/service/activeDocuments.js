@@ -1,9 +1,9 @@
-const {sharedb_server} = require('../config/sharedbConfig');
+const { sharedb_server } = require("../config/sharedbConfig");
 
 /**
- * An active document represents a document that has a presence. 
- * So inherently, an active document is linked with a presence. 
- * This class provides an interface for dealing with active documents 
+ * An active document represents a document that has a presence.
+ * So inherently, an active document is linked with a presence.
+ * This class provides an interface for dealing with active documents
  * and presences for those documents.
  */
 class ActiveDocumentPresence {
@@ -13,7 +13,7 @@ class ActiveDocumentPresence {
   }
 
   /**
-   * 
+   *
    * @param {string} docId - Document ID
    * @param {string} uId - client ID
    * @returns If the new connection was successfully added to the active documents object,
@@ -32,10 +32,10 @@ class ActiveDocumentPresence {
   }
 
   /**
-   * 
+   *
    * @param {string} docId - Document ID
    * @param {string} uId - client ID
-   * 
+   *
    * Deletes a connection from an active document. If there are no connections left,
    * then the active document is deleted.
    */
@@ -54,11 +54,11 @@ class ActiveDocumentPresence {
   }
 
   /**
-   * 
+   *
    * @param {string} docId - Document ID
    * @param {string} uId - client ID
    * @param {Response} res - Response object
-   * 
+   *
    * Initalizes an initial presence when a new user connects to the document.
    */
   setupPresence(docId, uId, res) {
@@ -68,11 +68,11 @@ class ActiveDocumentPresence {
       const presence = connection.getDocPresence(this._COLLECTION_NAME, docId);
       this.activeDocuments[docId][uId] = connection;
 
-      presence.subscribe(function(err) { 
+      presence.subscribe(function (err) {
         if (err) {
           console.log(err);
         }
-      })
+      });
 
       presence.create(uId);
 
@@ -90,17 +90,19 @@ class ActiveDocumentPresence {
       );
 
       presence.on("receive", (id, range) => {
-        let connClosed = false;
-        if (!range) connClosed = true;
+        let cursor = null;
+        if (range)
+          cursor = {
+            index: range.index,
+            name: id,
+            length: range.length,
+          };
 
         console.log(`Range received: ${JSON.stringify(range)} for ${id}`);
         res.write(
           `data: ${JSON.stringify({
-            cursor: {
-              connClosed,
-              id: id,
-              range: range,
-            },
+            id: id,
+            cursor: cursor,
           })}\n\n`
         );
       });
@@ -108,11 +110,11 @@ class ActiveDocumentPresence {
   }
 
   /**
-   * 
+   *
    * @param {string} presence - Presence object
    * @param {string} uId - client ID
    * @param {string} docId - document ID
-   * 
+   *
    * When a client connects to a document with already connected users, this newly connected
    * client doesn't yet have the presence data of the other users. This function manually adds
    * all remote presences of the document to the newly connected client.
@@ -132,10 +134,10 @@ class ActiveDocumentPresence {
   }
 
   /**
-   * 
+   *
    * @param {*} presence - Presence object
    * @returns List of cursor data
-   * 
+   *
    * Gets the current cursor data for all users of the document.
    */
   getCurrentCursorData(presence) {
@@ -143,10 +145,11 @@ class ActiveDocumentPresence {
     Object.keys(presence.remotePresences).forEach((key) => {
       if (presence.remotePresences[key]) {
         data.push({
+          id: key,
           cursor: {
-            connClosed: false,
-            id: key,
-            range: presence.remotePresences[key],
+            name: key,
+            index: presence.remotePresences[key].index,
+            length: presence.remotePresences[key].length,
           },
         });
       }
@@ -155,7 +158,7 @@ class ActiveDocumentPresence {
   }
 
   /**
-   * 
+   *
    * @param {string} docId - document ID
    * @param {string} uId - client ID
    * @param {Range} range - Range object

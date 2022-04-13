@@ -45,13 +45,15 @@ const connectToDocument = (docId, uId, res) => {
       res.sendStatus(400);
     }
 
-    setUpConnectedDocumentResponse(res, { docId, uId, ops: document.data.ops });
+    setUpConnectedDocumentResponse(res, { docId, uId, ops: document.data.ops, version: document.version });
 
     activeDocumentPresence.setupPresence(docId, uId, res);
 
     document.on("op", (op, source) => {
-      // If the incoming op is from the client, ignore it
-      if (source !== uId) res.write("data: " + JSON.stringify([op]) + "\n\n");
+      // If the incoming op is from the client, don't process it as new delta
+      if (source !== uId) res.write("data: " + JSON.stringify(op) + "\n\n");
+      // Confirm to posting client that the op was received
+      else res.write("data: " + JSON.stringify({ack: op}) + "\n\n");
     });
     console.log("Connected to document");
   });
@@ -66,7 +68,7 @@ const setUpConnectedDocumentResponse = (res, data) => {
     res.set("X-Accel-Buffering", "no"); // Disable nginx buffering
     res.set("Content-Type", "text/event-stream");
     res.write(
-      "data: " + JSON.stringify({ content: data.ops }) + "\n\n"
+      "data: " + JSON.stringify({ content: data.ops, version:  data.version}) + "\n\n"
     ); // Write initial OPs to the stream
 }
 
