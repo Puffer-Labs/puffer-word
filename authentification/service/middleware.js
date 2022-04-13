@@ -3,7 +3,7 @@ const bcrypt = require('bcrypt');
 const passport = require('../config/passportConfig');
 
 const isLoggedIn = (req, res, next) => {
-	if (req.session.passport) {
+	if (req.cookies.user) {
 		next();
 	} else {
 		res.status(403).send('You must be logged in to view this page');

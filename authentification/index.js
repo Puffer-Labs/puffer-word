@@ -16,7 +16,7 @@ const sharedbRouter = require("./gateway/sharedbRouter");
 app.use(express.json());
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: ['http://localhost:3000'],
     credentials: true,
   })
 );
@@ -29,9 +29,9 @@ app.use(
     saveUninitialized: false,
     cookie: {
       maxAge: 10 * 1000 * 10000, //10 seconds
-      sameSite: true,
+      sameSite: 'none',
+      secure: false,
     },
-    secure: false,
     resave: true,
     rolling: true, //updates the cookie expiration time
   })

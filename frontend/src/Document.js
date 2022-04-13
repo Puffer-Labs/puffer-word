@@ -50,7 +50,7 @@ const App = () => {
     cursors.init(quill);
 
     // Connect to the event source to listen for incoming operation changes
-    const connection = new EventSource(`${API}/doc/connect/${docId}/${id}`);
+    const connection = new EventSource(`${API}/doc/connect/${docId}/${id}`, {withCredentials: true});
 
     // server -> client
     connection.onmessage = (event) => {
@@ -88,8 +88,10 @@ const App = () => {
         fetch(`${API}/doc/op/${docId}/${id}`, {
           method: "POST",
           headers: {
+            "Accept": "application/json",
             "Content-Type": "application/json",
           },
+          credentials: "include",
           body: JSON.stringify({op, version: version}),
         }).then((res) => {
           // console.log(res);
@@ -129,6 +131,7 @@ const App = () => {
           headers: {
             "Content-Type": "application/json",
           },
+          credentials: "include",
           body: JSON.stringify(range),
         }).then((res) => {
           console.log(res);

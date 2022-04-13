@@ -5,7 +5,7 @@ import { withCookies, Cookies } from "react-cookie";
 
 const cookies = new Cookies();
 const Auth = () => {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [rUsername, setRUsername] = useState("");
@@ -24,7 +24,7 @@ const Auth = () => {
       .then((res) => {
         console.log(cookies.getAll());
         if (cookies.get("name") !== null) {
-          navigate("/documents");
+          // navigate("/documents");
         } else {
           console.log("Please login");
         }
@@ -37,7 +37,7 @@ const Auth = () => {
       d.setTime(d.getTime() + 0);
       cookies.set("user", "temp", { path: "/", expires: d });
       console.log(cookies.getAll());
-      navigate("/");
+      // navigate("/");
     });
   };
 

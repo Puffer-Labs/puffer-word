@@ -8,7 +8,8 @@ import ProtectedRoute from "./ProtectedRoute";
 export default function App() {
   return (
     <div>
-      <BrowserRouter>
+      <Auth/>
+      {/* <BrowserRouter>
         <Routes>
           <Route path="/" element={<ProtectedRoute />}>
             <Route exact path="/" element={<Documents />} />
@@ -21,7 +22,8 @@ export default function App() {
             <Route exact path="/documents" element={<Documents />} />
           </Route>
         </Routes>
-      </BrowserRouter>
+      </BrowserRouter> */}
+      <Document/>
     </div>
   );
 }

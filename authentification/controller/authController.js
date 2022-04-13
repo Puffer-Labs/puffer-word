@@ -27,8 +27,9 @@ router.post('/login', middleware.authorize, (req, res) => {
 	res.cookie('user', req.user.username, {
 		path: '/',
 		maxAge: 10 * 1000 * 10000,
-		sameSite: true,
-		secure: false
+		sameSite: 'none',
+		secure: false,
+		httpOnly: false
 	});
 	res.status(200).send({ name: req.user.username });
 });
