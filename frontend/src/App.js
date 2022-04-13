@@ -6,7 +6,7 @@ import images from "./images";
 import "quill/dist/quill.snow.css";
 const LOCALHOST_API = "http://localhost:8000";
 const PUBLIC_API = "http://10.1.239.193:8000";
-const API = PUBLIC_API;
+const API = LOCALHOST_API;
 
 //generate random client id
 const getId = () => {
@@ -18,9 +18,11 @@ const getId = () => {
 };
 
 const App = () => {
+  const [id, setId] = React.useState(getId());
+  const [cursorsList, setCursorsList] = React.useState([id]);
+
   React.useEffect(() => {
     Quill.register("modules/cursors", QuillCursors);
-    const id = getId();
     //get docId from this component's url
     const docId = window.location.pathname.split("/").pop();
     const options = {
@@ -64,12 +66,12 @@ const App = () => {
        * 3. {data: {cursor: {connClosed: boolean, id: string, position: number}}} This is the cursor position of one of the clients that was updated.
        */
       const data = JSON.parse(event.data);
+      console.log("On message", data);
       if (cursors.isRemoteCursorEvent(data, id)) {
-        cursors.processCursorEvent(data.cursor);
+        cursors.processCursorEvent(data.cursor, addToList, removeFromList);
       } else if (data.content) {
         quill.setContents(data.content);
       } else {
-        console.log(data);
         data.map((op) => quill.updateContents(op));
       }
     };
@@ -110,6 +112,18 @@ const App = () => {
     };
   }, []);
 
+  // If there is a duplicate, don't add to list
+  function addToList(id) {
+    if (!cursorsList.includes(id)) {
+      setCursorsList((prev) => [...prev, id]);
+    }
+  }
+
+  function removeFromList(id) {
+    setCursorsList((prev) => prev.filter((cursor) => cursor !== id));
+  }
+
+
   function selectionChangeHandler(docId, id) {
     return function (range, oldRange, source) {
       if (range && source === "user") {
@@ -134,6 +148,8 @@ const App = () => {
 
   return (
     <>
+      <h1>Client ID: {id}</h1>
+      {JSON.stringify(cursorsList, null, 2)}
       <div
         style={{
           margin: "5%",
