@@ -8,7 +8,10 @@ const { sharedb_server } = require("../config/sharedbConfig");
  */
 class ActiveDocumentPresence {
   constructor() {
+    //each active document (key), has a list (value) of activeClientId : Connection key value pairs
     this.activeDocuments = {};
+    //each active client id (key) will map to that user's email (value)
+    this.idToEmailMap = {};
     this._COLLECTION_NAME = "documents";
   }
 
@@ -39,7 +42,7 @@ class ActiveDocumentPresence {
    * Deletes a connection from an active document. If there are no connections left,
    * then the active document is deleted.
    */
-  removeConnection(docId, uId) {
+  removeConnection(docId, uId, email) {
     const presence = this.activeDocuments[docId][uId].getDocPresence(
       this._COLLECTION_NAME,
       docId
@@ -47,6 +50,7 @@ class ActiveDocumentPresence {
     presence.destroy();
 
     delete this.activeDocuments[docId][uId];
+    delete this.idToEmailMap[uId];
 
     if (Object.keys(this.activeDocuments[docId]).length === 0) {
       delete this.activeDocuments[docId];
@@ -61,12 +65,13 @@ class ActiveDocumentPresence {
    *
    * Initalizes an initial presence when a new user connects to the document.
    */
-  setupPresence(docId, uId, res) {
+  setupPresence(docId, uId, res, email) {
     const connection = sharedb_server.connect();
     const doc = connection.get(this._COLLECTION_NAME, docId);
     doc.fetch(() => {
       const presence = connection.getDocPresence(this._COLLECTION_NAME, docId);
       this.activeDocuments[docId][uId] = connection;
+      this.idToEmailMap[uId] = email;
 
       presence.subscribe(function (err) {
         if (err) {
@@ -94,7 +99,7 @@ class ActiveDocumentPresence {
         if (range)
           cursor = {
             index: range.index,
-            name: id,
+            name: this.idToEmailMap[id],
             length: range.length,
           };
 
@@ -147,7 +152,7 @@ class ActiveDocumentPresence {
         data.push({
           id: key,
           cursor: {
-            name: key,
+            name: this.idToEmailMap[key],
             index: presence.remotePresences[key].index,
             length: presence.remotePresences[key].length,
           },

@@ -19,8 +19,8 @@ const processCursorEvent = (data, add, remove) => {
   const clientCursor = cursors[data.id];
   console.log(data);
   if (data.cursor != null && !clientCursor) {
-    create(data.id, data.id);
-    add(data.id);
+    create(data.id, data.cursor.name);
+    add(data.cursor.name);
   } else {
     _processExistingClientCursor(data,remove);
   }
@@ -38,7 +38,7 @@ const processCursorEvent = (data, add, remove) => {
 const _processExistingClientCursor = (data, remove) => {
   if (data.cursor == null) {
     disconnect(data.id);
-    remove(data.id);
+    remove(data.cursor.name);
   } else {
     const index = data.cursor.index;
     const length = data.cursor.length;
@@ -64,8 +64,8 @@ const init = (quill) => {
  * Creates a new cursor for a remote client that has connected.
  * The remote cursor is added to the cursors dictionary.
  */
-const create = (id) => {
-  const { name, color } = _generateMetadata();
+const create = (id, name) => {
+  const { defaultName, color } = _generateMetadata();
   cursors[id] = cursorModule.createCursor(id, name, color);
   //initiate cursor position on page for new remote connection
   //move(id, { index: 0, length: 0 });

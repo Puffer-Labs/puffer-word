@@ -30,7 +30,7 @@ const connectionIds = {};
  * Attempts to connect to the document. If the document already exists, it will publish OPs through the event stream.
  *
  */
-const connectToDocument = (docId, uId, res) => {
+const connectToDocument = (docId, uId, res, email) => {
   // Establish a new ShareDB connection
   const connection = ShareDB.sharedb_connection;
   const document = connection.get("documents", docId);
@@ -45,9 +45,9 @@ const connectToDocument = (docId, uId, res) => {
       res.sendStatus(400);
     }
 
-    setUpConnectedDocumentResponse(res, { docId, uId, ops: document.data.ops, version: document.version });
+    setUpConnectedDocumentResponse(res, { docId, uId, ops: document.data.ops, version: document.version, email: email });
 
-    activeDocumentPresence.setupPresence(docId, uId, res);
+    activeDocumentPresence.setupPresence(docId, uId, res, email);
 
     document.on("op", (op, source) => {
       // If the incoming op is from the client, ignore it
@@ -60,7 +60,7 @@ const connectToDocument = (docId, uId, res) => {
 
 const setUpConnectedDocumentResponse = (res, data) => {
     res.on("close", () => {
-      activeDocumentPresence.removeConnection(data.docId, data.uId)
+      activeDocumentPresence.removeConnection(data.docId, data.uId, data.email)
       res.end();
     });
     // Set appropriate headers

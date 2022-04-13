@@ -19,7 +19,7 @@ const getId = () => {
 
 const App = () => {
   const [id, setId] = React.useState(getId());
-  const [cursorsList, setCursorsList] = React.useState([id]);
+  const [cursorsList, setCursorsList] = React.useState([document.cookie.split("=")[1]]);
 
   React.useEffect(() => {
     Quill.register("modules/cursors", QuillCursors);
@@ -117,8 +117,8 @@ const App = () => {
     }
   }
 
-  function removeFromList(id) {
-    setCursorsList((prev) => prev.filter((cursor) => cursor !== id));
+  function removeFromList(name) {
+    setCursorsList((prev) => prev.filter((cursor) => cursor !== name));
   }
 
 

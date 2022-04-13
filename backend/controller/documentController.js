@@ -6,9 +6,11 @@ const documentService = require("../service/documentService");
 documentRouter.get("/doc/connect/:docId/:uId", (req, res) => {
   const docId = req.params.docId;
   const uId = req.params.uId;
+  const email = req.cookies.user;
+
   res.set("X-CSE356", "61f9d6733e92a433bf4fc8dd");
   try {
-    documentService.connectToDocument(docId, uId, res);
+    documentService.connectToDocument(docId, uId, res, email);
   } catch (err) {
     res.status(400).send({ error: err.message });
   }
