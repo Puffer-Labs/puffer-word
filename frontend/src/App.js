@@ -60,7 +60,7 @@ const App = () => {
        * 3. {data: {cursor: {connClosed: boolean, id: string, position: number}}} This is the cursor position of one of the clients that was updated.
        */
       const data = JSON.parse(event.data);
-      console.log(data);
+      console.log("On message", data);
       if (cursors.isRemoteCursorEvent(data, id)) {
         cursors.processCursorEvent(data.cursor, addToList, removeFromList);
       } else if (data.content) {

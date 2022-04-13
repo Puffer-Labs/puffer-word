@@ -27,7 +27,7 @@ process.on("SIGINT", () => {
   api_instance.close(() => {
     mongoDBClient.close();
     console.log("Server closed. Database instance disconnected");
-    process.exit(0);
   });
+  process.exit();
 });
 
