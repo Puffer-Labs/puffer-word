@@ -16,9 +16,10 @@ documentRouter.get("/doc/connect/:docId/:uId", (req, res) => {
 
 documentRouter.get("/doc/get/:docId/:uId", (req, res) => {
   const docId = req.params.docId;
+  const uId = req.params.uId;
   res.set("X-CSE356", "61f9d6733e92a433bf4fc8dd");
   try {
-    documentService.getDocumentHTML(docId, res);
+    documentService.getDocumentHTML(docId, uId, res);
   } catch (err) {
     res.status(400).send({ error: err.message });
   }
@@ -28,6 +29,7 @@ documentRouter.post("/doc/op/:docId/:uId", (req, res) => {
   const docId = req.params.docId;
   const uId = req.params.uId;
   const data = req.body;
+  console.log(data);
   res.set("X-CSE356", "61f9d6733e92a433bf4fc8dd");
   try {
     if (documentService.postOp(docId, uId, data, res)) {

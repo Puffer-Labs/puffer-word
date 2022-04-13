@@ -51,7 +51,8 @@ const connectToDocument = (docId, uId, res) => {
 
     document.on("op", (op, source) => {
       // If the incoming op is from the client, ignore it
-      if (source !== uId) res.write("data: " + JSON.stringify(op) + "\n\n");
+      if (source !== uId) res.write("data: " + JSON.stringify({op}) + "\n\n");
+      else res.write("data: " + JSON.stringify({ack: op}) + "\n\n");
     });
     console.log("Connected to document");
   });
@@ -100,8 +101,12 @@ const postOp = (docId, uId, data) => {
  *
  * Returns the document as HTML using the QuillDeltaToHtmlConverter.
  */
-const getDocumentHTML = (docId, res) => {
-  const document = connection.get("documents", docId);
+const getDocumentHTML = (docId, uId, res) => {
+  if (!activeDocumentPresence.activeDocuments[docId][uId]) {
+    throw new Error("User not connected to document");
+  }
+
+  const document = ShareDB.sharedb_connection.get("documents", docId);
   document.fetch(() => {
     if (document.type === null) throw new Error("Document does not exist");
     //try to grab existing document
