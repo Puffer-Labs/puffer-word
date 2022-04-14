@@ -1,4 +1,4 @@
-const passport = require("../config/passportConfig");
+const passport = require('../config/passportConfig');
 
 /**
  *
@@ -11,12 +11,12 @@ const passport = require("../config/passportConfig");
  */
 
 const isLoggedIn = (req, res, next) => {
-  if (req.session.passport) {
-    console.log("exiting isLoggedIn");
-    next();
-  } else {
-    res.status(401).send("You must be logged in to view this page");
-  }
+	if (req.session.passport) {
+		console.log('exiting isLoggedIn');
+		next();
+	} else {
+		res.status(401).send('You must be logged in to view this page');
+	}
 };
 
 /**
@@ -34,19 +34,19 @@ const isLoggedIn = (req, res, next) => {
  */
 
 const authorize = (req, res, next) => {
-  passport.authenticate("local", {}, (err, user) => {
-    if (err) {
-      res.status(500).send({ error: err.message });
-    }
-    if (!user) {
-      res.status(404).send("User not found");
-    }
-    if (user) {
-      req.session.passport = { user: user.username };
-      req.user = user;
-      next();
-    }
-  })(req, res, next);
+	passport.authenticate('local', {}, (err, user) => {
+		if (err) {
+			res.status(500).send({ error: err.message });
+		}
+		if (!user) {
+			res.status(404).send('User not found');
+		}
+		if (user) {
+			req.session.passport = { user: user.username };
+			req.user = user;
+			next();
+		}
+	})(req, res, next);
 };
 
 /**
@@ -60,23 +60,22 @@ const authorize = (req, res, next) => {
  */
 
 const logout = (req, res, next) => {
-  req.session.passport = null;
-  req.user = null;
-  next();
+	req.session.passport = null;
+	req.user = null;
+	next();
 };
 
 const isVerified = (req, res, next) => {
-  if (req.user.status) {
-    console.log("hit");
-    next();
-  } else {
-    res.status(401).send("You must verify your account");
-  }
+	if (req.user.status) {
+		next();
+	} else {
+		res.status(401).send('You must verify your account');
+	}
 };
 
 module.exports = {
-  isLoggedIn,
-  logout,
-  authorize,
-  isVerified,
+	isLoggedIn,
+	logout,
+	authorize,
+	isVerified
 };
