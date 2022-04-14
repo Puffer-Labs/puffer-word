@@ -51,7 +51,7 @@ const getFile = (res, mediaId) => {
   } else if (fs.existsSync(uploadPath + ".jpg")) {
     res.sendFile(`${uploadPath}.jpg`);
   } else {
-    res.status(404).send({ error: "File not found!" });
+    res.status(404).send({ error: true, message: "File not found!" });
   }
 };
 
