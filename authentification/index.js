@@ -42,7 +42,7 @@ app.use(passport.session());
 
 
 app.use("/", authController);
-app.use('/proxy', sharedbRouter);
+app.use("/", sharedbRouter);
 
 
 app.get("/", (req, res) => {
