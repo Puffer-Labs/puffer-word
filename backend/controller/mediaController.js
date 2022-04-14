@@ -20,7 +20,7 @@ router.post(
     });
   },
   (err, req, res, next) => {
-    res.status(400).send({ error: err.message });
+    res.status(400).send({ error: true, message: err.message });
   }
 );
 
@@ -32,7 +32,7 @@ router.get("/access/:mediaid", (req, res) => {
   try {
     mediaService.getFile(res, req.params.mediaid);
   } catch (err) {
-    res.status(400).send({ error: err.message });
+    res.status(400).send({ error: true, message: err.message });
   }
 });
 

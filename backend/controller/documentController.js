@@ -12,7 +12,7 @@ documentRouter.get("/doc/connect/:docId/:uId", (req, res) => {
   try {
     documentService.connectToDocument(docId, uId, res, email);
   } catch (err) {
-    res.status(400).send({ error: err.message });
+    res.status(400).send({ error: true, message: err.message });
   }
 });
 
@@ -23,7 +23,7 @@ documentRouter.get("/doc/get/:docId/:uId", (req, res) => {
   try {
     documentService.getDocumentHTML(docId, uId, res);
   } catch (err) {
-    res.status(400).send({ error: err.message });
+    res.status(400).send({ error: true, message: err.message });
   }
 });
 
@@ -36,7 +36,7 @@ documentRouter.post("/doc/op/:docId/:uId", (req, res) => {
   try {
     documentService.postOp(docId, uId, data, res)
   } catch (err) {
-    res.status(400).send({ error: err.message });
+    res.status(400).send({ error: true, message: err.message });
   }
 });
 
@@ -48,7 +48,7 @@ documentRouter.post("/doc/presence/:docId/:uId", (req, res) => {
     documentService.submitPresenceRange(docId, uId, range);
     res.json("success");
   } catch (err) {
-    res.status(400).send({ error: err.message });
+    res.status(400).send({ error: true, message: err.message });
   }
 });
 
@@ -58,7 +58,7 @@ documentRouter.post("/collection/create", (req, res) => {
   try {
     const docid = documentService.createDocument(name, res);
   } catch (err) {
-    res.status(400).send({ error: err.message });
+    res.status(400).send({ error: true, message: err.message });
   }
 });
 
@@ -69,7 +69,7 @@ documentRouter.delete("/collection/delete", (req, res) => {
     documentService.deleteDocument(id);
     res.send("success");
   } catch (err) {
-    res.status(400).send({ error: err.message });
+    res.status(400).send({ error: true, message: err.message });
   }
 });
 
@@ -79,7 +79,7 @@ documentRouter.get("/collection/list", async (req, res) => {
     const docs = await documentService.getDocuments();
     res.send(docs);
   } catch (err) {
-    res.status(400).send({ error: err.message });
+    res.status(400).send({ error: true, message: err.message });
   }
 });
 
