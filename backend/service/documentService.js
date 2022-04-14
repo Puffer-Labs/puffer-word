@@ -1,6 +1,6 @@
 const ShareDB = require("../config/sharedbConfig");
 const mongoDBClient = require("../config/mongoConfig");
-const generateRandomID = require("../utils/idGenerator")
+const generateRandomID = require("../utils/idGenerator");
 const ActiveDocumentPresence = require("./activeDocuments");
 const QuillDeltaToHtmlConverter =
   require("quill-delta-to-html").QuillDeltaToHtmlConverter;
@@ -36,44 +36,55 @@ const connectToDocument = (docId, uId, res, email) => {
   const document = connection.get("documents", docId);
   // Map the connection to the client ID
   document.fetch(() => {
-    if (document.type === null)
+    if (document.type === null) {
       //throw error if null
-      throw new Error("Document does not exist");
+      res.status(400).send({ error: true, message: "Document Not Found" });
+      return;
+    }
 
     // Add client ID to active connections
     if (!activeDocumentPresence.addNewConnection(docId, uId)) {
-      res.sendStatus(400);
+      res.status(400).send({ error: true, message: "Active user with this Id" });
+      return;
     }
 
-    setUpConnectedDocumentResponse(res, { docId, uId, ops: document.data.ops, version: document.version, email: email });
+    setUpConnectedDocumentResponse(res, {
+      docId,
+      uId,
+      ops: document.data.ops,
+      version: document.version,
+      email: email,
+    });
 
     activeDocumentPresence.setupPresence(docId, uId, res, email);
 
     document.on("op", (op, source) => {
       // If the incoming op is from the client, ignore it
-      if (source !== uId) res.write("data: " + JSON.stringify({op}) + "\n\n");
-      else res.write("data: " + JSON.stringify({ack: op}) + "\n\n");
+      if (source !== uId) res.write("data: " + JSON.stringify({ op }) + "\n\n");
+      else res.write("data: " + JSON.stringify({ ack: op }) + "\n\n");
     });
     console.log("Connected to document");
   });
 };
 
 const setUpConnectedDocumentResponse = (res, data) => {
-    res.on("close", () => {
-      activeDocumentPresence.removeConnection(data.docId, data.uId, data.email)
-      res.end();
-    });
-    // Set appropriate headers
-    res.set("X-Accel-Buffering", "no"); // Disable nginx buffering
-    res.set("Content-Type", "text/event-stream");
-    res.write(
-      "data: " + JSON.stringify({ content: data.ops, version:  data.version}) + "\n\n"
-    ); // Write initial OPs to the stream
-}
+  res.on("close", () => {
+    activeDocumentPresence.removeConnection(data.docId, data.uId, data.email);
+    res.end();
+  });
+  // Set appropriate headers
+  res.set("X-Accel-Buffering", "no"); // Disable nginx buffering
+  res.set("Content-Type", "text/event-stream");
+  res.write(
+    "data: " +
+      JSON.stringify({ content: data.ops, version: data.version }) +
+      "\n\n"
+  ); // Write initial OPs to the stream
+};
 
-const submitPresenceRange = (docId, uId, range) => {
+const submitPresenceRange = (docId, uId, range, res) => {
   activeDocumentPresence.submitPresenceRange(docId, uId, range);
-}
+};
 
 /**
  * @param {string} docId - Document ID
@@ -84,14 +95,14 @@ const submitPresenceRange = (docId, uId, range) => {
  * Goes through the ops array and submits them to the document.
  */
 const postOp = (docId, uId, data, res) => {
-  const {op, version} = data;
+  const { op, version } = data;
   const document = ShareDB.sharedb_connection.get("documents", docId);
   document.fetch(() => {
     if (version != document.version) {
-      res.status(400).send({ status: "retry"})
+      res.status(400).send({ status: "retry" });
     } else {
       document.submitOp(op, { source: uId });
-      res.status(200).send({ status: "ok"});
+      res.status(200).send({ status: "ok" });
     }
   });
 };
@@ -104,12 +115,22 @@ const postOp = (docId, uId, data, res) => {
  */
 const getDocumentHTML = (docId, uId, res) => {
   if (!activeDocumentPresence.activeDocuments[docId][uId]) {
-    throw new Error("User not connected to document");
+    res.status(400).send({
+      error: true,
+      message: "Can't get document html if not an active client",
+    });
+    return;
   }
 
   const document = ShareDB.sharedb_connection.get("documents", docId);
   document.fetch(() => {
-    if (document.type === null) throw new Error("Document does not exist");
+    if (document.type === null) {
+      res.status(400).send({
+        error: true,
+        message: "Document not found while trying to return html for it",
+      });
+      return;
+    }
     //try to grab existing document
     const parser = new QuillDeltaToHtmlConverter(document.data.ops, {});
     res.send(parser.convert());
@@ -139,7 +160,9 @@ const createDocument = (name, res) => {
         .collection("names")
         .insertOne({ _id: id, name: name });
     } else {
-      throw new Error("Document already exists");
+      res
+        .status(400)
+        .send({ error: true, message: "Could not create document" });
     }
   });
 };
@@ -148,12 +171,17 @@ const createDocument = (name, res) => {
  *
  * Tombstones the document with the given id
  */
-const deleteDocument = (id) => {
+const deleteDocument = (id, res) => {
   const connection = ShareDB.sharedb_server.connect();
   const doc = connection.get("documents", id);
   doc.fetch(() => {
-    if (doc.type) doc.del();
-    else console.log("Document does not exist");
+    if (doc.type) {
+      doc.del();
+      res.send("success");
+    } else
+      res
+        .status(404)
+        .send({ error: true, message: "Error while deleting document" });
   });
 };
 
@@ -162,7 +190,7 @@ const deleteDocument = (id) => {
  * in descending order. Each document is one to one related to a record in the 'names'collection, so we have to left outer join them.
  * The lookup operator performs the left outer join, the project operator is specifying we only want the _id and name fields
  */
-const getDocuments = async () => {
+const getDocuments = async (res) => {
   try {
     let docs = await mongoDBClient
       .db("test")
@@ -189,7 +217,13 @@ const getDocuments = async () => {
       .toArray();
     return docs;
   } catch (err) {
-    console.log(err);
+    res
+      .status(400)
+      .send({
+        error: true,
+        message: "Error while getting ten most recent documents",
+      });
+    return;
   }
 };
 
