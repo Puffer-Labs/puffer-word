@@ -99,7 +99,7 @@ const postOp = (docId, uId, data, res) => {
   const document = ShareDB.sharedb_connection.get("documents", docId);
   document.fetch(() => {
     if (version != document.version) {
-      res.status(400).send({ status: "retry" });
+      res.status(400).send({ status: "retry", version: document.version });
     } else {
       document.submitOp(op, { source: uId });
       res.status(200).send({ status: "ok" });
