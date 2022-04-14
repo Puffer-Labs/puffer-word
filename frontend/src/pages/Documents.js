@@ -6,6 +6,10 @@ import Header from "../components/header";
 import DocumentList from "../components/documentList";
 import "./pageStyles/documents.css";
 
+/**
+ * TODO: replace dummy data with API GET endpoint
+ */
+
 const cookies = new Cookies();
 
 const Documents = () => {
@@ -30,6 +34,9 @@ const Documents = () => {
       author: "Author 3",
       id: 3,
       created: "2020-03-01",
+    },
+    {
+      title: "Document 4",
     },
   ];
 

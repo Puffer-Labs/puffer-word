@@ -18,7 +18,7 @@ const DocumentList = (props) => {
     <div className="doc-list-element">
       <div className="list-banner">
         <h1>Documents</h1>
-        <button>New Document</button>
+        <button className="new-doc-btn">New Document</button>
       </div>
       <div className="document-table-container">
         <table className="table">
