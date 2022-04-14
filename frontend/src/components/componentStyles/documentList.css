@@ -1,0 +1,26 @@
+.doc-list-element {
+  display: flex;
+  flex-direction: column;
+  width: 1150px;
+  margin-top: 50px;
+}
+
+.list-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.document-table-container {
+  margin-top: 50px;
+  width: 100%;
+}
+
+.table {
+  width: 100%;
+  border-spacing: 15px;
+}
+
+td {
+  text-align: center;
+}
