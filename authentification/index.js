@@ -41,6 +41,10 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 
+app.use((req, res, next) => {
+  res.setHeader("X-CSE356", "61f9d6733e92a433bf4fc8dd")
+  next();
+});
 app.use("/", authController);
 app.use("/", sharedbRouter);
 

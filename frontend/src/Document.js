@@ -4,7 +4,7 @@ import QuillCursors from "quill-cursors";
 import cursors from "./cursors";
 import images from "./images";
 import "quill/dist/quill.snow.css";
-const LOCALHOST_API = "http://localhost:8080/proxy";
+const LOCALHOST_API = "http://localhost:8080";
 const PUBLIC_API = "http://10.1.239.193:8000";
 const API = LOCALHOST_API;
 
