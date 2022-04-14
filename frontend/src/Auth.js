@@ -15,7 +15,7 @@ const Auth = () => {
   const handleLogin = async () => {
     await axios
       .post(
-        "http://localhost:8080/login",
+        "http://localhost:8080/users/login",
         {
           username: username,
           password: password,
@@ -33,7 +33,7 @@ const Auth = () => {
   };
 
   const handleLogout = () => {
-    axios.get("http://localhost:8080/logout").then((res) => {
+    axios.get("http://localhost:8080/users/logout").then((res) => {
       let d = new Date();
       d.setTime(d.getTime() + 0);
       cookies.set("user", "temp", { path: "/", expires: d });
@@ -43,7 +43,7 @@ const Auth = () => {
   };
 
   const handleRegister = async () => {
-    await axios.post("http://localhost:8080/users/create", {
+    await axios.post("http://localhost:8080/users/signup", {
       username: rUsername,
       email: rEmail,
       password: rPassword,

@@ -1,13 +1,20 @@
-const nodemailer = require('nodemailer');
+const nodemailer = require("nodemailer");
 
-let transporter = nodemailer.createTransport({
-	host: 'smtp.ethereal.email',
-	port: 587,
-	secure: false,
-	auth: {
-		user: 'delpha.roberts92@ethereal.email',
-		pass: 'S4pck5HnDBkr5yAXX7'
-	}
+const email = "verify@softpaddle.com";
+
+const transporter = nodemailer.createTransport({
+  host: "softpaddle.com",
+  port: 25,
+  secure: false,
+  auth: {
+    user: "softpaddle",
+    pass: "verifyuser",
+  },
 });
 
-module.exports = transporter;
+const mail = {
+  transporter,
+  email,
+};
+
+module.exports = mail;
