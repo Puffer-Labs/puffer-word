@@ -6,6 +6,9 @@ const transporter = nodemailer.createTransport({
   host: "softpaddle.com",
   port: 25,
   secure: false,
+  tls: {
+    rejectUnauthorized: false,
+  },
   auth: {
     user: "softpaddle",
     pass: "verifyuser",
