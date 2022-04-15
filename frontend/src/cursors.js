@@ -5,6 +5,7 @@ const isRemoteCursorEvent = (data, id) => data.cursor !== undefined && data.id !
 
 // Maps the cursor id to the cursor object.
 const cursors = {};
+const idToNameMap = {};
 // Quill Cursor module for managing all cursors
 let cursorModule;
 
@@ -37,8 +38,8 @@ const processCursorEvent = (data, add, remove) => {
  */
 const _processExistingClientCursor = (data, remove) => {
   if (data.cursor == null) {
+    remove(idToNameMap[data.id]);
     disconnect(data.id);
-    remove(data.cursor.name);
   } else {
     const index = data.cursor.index;
     const length = data.cursor.length;
@@ -67,6 +68,7 @@ const init = (quill) => {
 const create = (id, name) => {
   const { defaultName, color } = _generateMetadata();
   cursors[id] = cursorModule.createCursor(id, name, color);
+  idToNameMap[id] = name;
   //initiate cursor position on page for new remote connection
   //move(id, { index: 0, length: 0 });
   cursorModule.update();
@@ -82,6 +84,7 @@ const create = (id, name) => {
 const disconnect = (id) => {
   cursorModule.removeCursor(id);
   delete cursors[id];
+  delete idToNameMap[id];
 };
 
 /**

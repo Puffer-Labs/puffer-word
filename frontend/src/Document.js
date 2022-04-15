@@ -7,7 +7,7 @@ import Queue from "./queue";
 import "quill/dist/quill.snow.css";
 const LOCALHOST_API = "http://localhost:8080";
 const PUBLIC_API = "http://209.194.58.90:8080";
-const API = PUBLIC_API;
+const API = LOCALHOST_API;
 
 //generate random client id
 const getId = () => {

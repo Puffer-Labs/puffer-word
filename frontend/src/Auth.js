@@ -42,7 +42,7 @@ const Auth = () => {
   };
 
   const handleRegister = async () => {
-    await axios.post("http://209.94.58.90:8080/users/signup", {
+    await axios.post("http://localhost:8080/users/signup", {
       email: "yakonar533@3dinews.com",
       username: rUsername,
       password: rPassword,
