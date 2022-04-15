@@ -5,16 +5,17 @@ import { withCookies, Cookies } from "react-cookie";
 
 const cookies = new Cookies();
 const Auth = () => {
-  // const navigate = useNavigate();
+  const navigate = useNavigate();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [rUsername, setRUsername] = useState("");
   const [rPassword, setRPassword] = useState("");
+  const [rEmail, setREmail] = useState("");
 
   const handleLogin = async () => {
     await axios
       .post(
-        "http://localhost:8080/login",
+        "http://localhost:8080/users/login",
         {
           username: username,
           password: password,
@@ -24,7 +25,7 @@ const Auth = () => {
       .then((res) => {
         console.log(cookies.getAll());
         if (cookies.get("name") !== null) {
-          // navigate("/documents");
+          navigate("/documents");
         } else {
           console.log("Please login");
         }
@@ -32,19 +33,19 @@ const Auth = () => {
   };
 
   const handleLogout = () => {
-    axios.get("http://localhost:8080/logout").then((res) => {
+    axios.get("http://localhost:8080/users/logout").then((res) => {
       let d = new Date();
       d.setTime(d.getTime() + 0);
       cookies.set("user", "temp", { path: "/", expires: d });
       console.log(cookies.getAll());
-      // navigate("/");
+      navigate("/");
     });
   };
 
   const handleRegister = async () => {
     await axios.post("http://localhost:8080/users/signup", {
-      email: "yakonar533@3dinews.com",
       username: rUsername,
+      email: rEmail,
       password: rPassword,
     });
   };
@@ -57,12 +58,12 @@ const Auth = () => {
           placeholder="Username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
-        ></input>
+        />
         <input
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-        ></input>
+        />
         <button onClick={() => handleLogin()}>Login</button>
         <button onClick={() => handleLogout()}>Logout</button>
       </div>
@@ -72,12 +73,17 @@ const Auth = () => {
           placeholder="Username"
           value={rUsername}
           onChange={(e) => setRUsername(e.target.value)}
-        ></input>
+        />
+        <input
+          placeholder="Email"
+          value={rEmail}
+          onChange={(e) => setREmail(e.target.value)}
+        />
         <input
           placeholder="Password"
           value={rPassword}
           onChange={(e) => setRPassword(e.target.value)}
-        ></input>
+        />
         <button onClick={() => handleRegister()}>Register</button>
       </div>
     </div>
