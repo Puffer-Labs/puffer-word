@@ -46,7 +46,7 @@ const loginUser = (req, res) => {
 		sameSite: true,
 		secure: false
 	});
-	res.status(200).send({ name: req.user.email });
+	res.status(200).send({ name: req.user.username });
 };
 
 /**
