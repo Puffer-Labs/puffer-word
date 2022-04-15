@@ -12,13 +12,13 @@ const middleware = require("../service/middleware");
 router.post("/signup", async (req, res) => {
   const newUser = await authService.createUser(req, res);
   let info = await email.transporter.sendMail({
-    from: "Puffer labs <howell.williamson57@ethereal.email>",
+    from: "Puffer labs <verify@softpaddle.com>",
     to: newUser.email,
-    subject: "Welcome to Puffer labs ✔",
-    text: `Welcome to Puffer labs, ${newUser.username}!`,
+    subject: "Welcome to Puffer labs",
+    text: `Welcome to Puffer labs, ${newUser.username}! This is your confirmation link.`,
     html: `<a href=http://localhost:8080/users/verify?key=${newUser.confirmationCode}>Verify Email</a>`,
   });
-  res.status(201).send({ user: newUser, emailInfo: info });
+  res.status(201);
 });
 
 router.post("/login", middleware.authorize, (req, res) => {
@@ -35,12 +35,12 @@ router.get("/verify", (req, res) => {
   User.findOne({ confirmationCode: req.query.key })
     .then((user) => {
       if (!user) {
-        return res.status(404).send({ message: "User not found" });
+        return res.status(404).send({error: true, message: "User not found" });
       }
       user.status = true;
       user.save((err) => {
         if (err) {
-          return res.status(500).send({ message: err.message });
+          return res.status(500).send({error:true, message: err.message });
         }
       });
       res.status(200).send({ user: user });
@@ -56,19 +56,11 @@ router.get(
     req.session.destroy(function (err) {
       res.clearCookie("connect.sid");
       res.clearCookie("user");
-      res.status(200).send({ msg: "logged out" });
+      res.status(200);
     });
   }
 );
 
-router.get("/email", async (req, res) => {
-  let info = await email.transporter.sendMail({
-    from: `Puffer Labs <${email.email}>`,
-    to: "fogal77280@hhmel.com",
-    subject: "Test",
-    text: "test",
-  });
-  res.send(info);
-});
+
 
 module.exports = router;

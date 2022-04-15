@@ -36,10 +36,10 @@ const isLoggedIn = (req, res, next) => {
 const authorize = (req, res, next) => {
 	passport.authenticate('local', {}, (err, user) => {
 		if (err) {
-			res.status(500).send({ error: err.message });
+			res.status(500).send({ error: true, message: "There was an error with the request." });
 		}
 		if (!user) {
-			res.status(404).send('User not found');
+			res.status(404).send({error: true, message: "User was not found."});
 		}
 		if (user) {
 			req.session.passport = { user: user.username };
