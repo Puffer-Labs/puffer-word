@@ -11,6 +11,7 @@ const DocumentList = (props) => {
       author={document.author}
       created={document.created}
       key={document.id}
+      id={document.id}
     />
   ));
 

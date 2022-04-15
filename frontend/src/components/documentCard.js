@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 
 const DocumentCard = (props) => {
   const title = props.title ? props.title : "Document Title";
@@ -7,9 +8,11 @@ const DocumentCard = (props) => {
 
   return (
     <tr>
-      <td>{title}</td>
-      <td>{author}</td>
-      <td>{created}</td>
+      <Link to={`/documents/${props.id}`}>
+        <td>{title}</td>
+        <td>{author}</td>
+        <td>{created}</td>
+      </Link>
     </tr>
   );
 };
