@@ -60,7 +60,10 @@ const connectToDocument = (docId, uId, res, email) => {
 
     document.on("op", (op, source) => {
       // If the incoming op is from the client, ignore it
-      if (source !== uId) res.write("data: " + JSON.stringify({ op }) + "\n\n");
+      if (source !== uId) {
+        console.log(`Writing to ${op} to ${uId}`);
+        res.write("data: " + JSON.stringify({ op }) + "\n\n");
+      }
       else res.write("data: " + JSON.stringify({ ack: op }) + "\n\n");
     });
     console.log("Connected to document");
