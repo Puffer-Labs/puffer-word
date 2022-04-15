@@ -4,9 +4,10 @@ import QuillCursors from "quill-cursors";
 import cursors from "./cursors";
 import images from "./images";
 import "quill/dist/quill.snow.css";
-const LOCALHOST_API = "http://localhost:8080/proxy";
+const LOCALHOST_API = "http://localhost:8080";
 const PUBLIC_API = "http://10.1.239.193:8000";
 const API = LOCALHOST_API;
+let version = 0;
 
 //generate random client id
 const getId = () => {
@@ -19,11 +20,12 @@ const getId = () => {
 
 const App = () => {
   const [id, setId] = React.useState(getId());
-  const [cursorsList, setCursorsList] = React.useState([document.cookie.split("=")[1]]);
+  const [cursorsList, setCursorsList] = React.useState([
+    document.cookie.split("=")[1],
+  ]);
 
   React.useEffect(() => {
     Quill.register("modules/cursors", QuillCursors);
-    let version = 0;
     //get docId from this component's url
     const docId = window.location.pathname.split("/").pop();
     const options = {
@@ -50,7 +52,9 @@ const App = () => {
     cursors.init(quill);
 
     // Connect to the event source to listen for incoming operation changes
-    const connection = new EventSource(`${API}/doc/connect/${docId}/${id}`, {withCredentials: true});
+    const connection = new EventSource(`${API}/doc/connect/${docId}/${id}`, {
+      withCredentials: true,
+    });
 
     // server -> client
     connection.onmessage = (event) => {
@@ -68,11 +72,10 @@ const App = () => {
         quill.setContents(data.content);
         version = data.version;
       } else if (data.ack) {
-        version += 1
-      }
-      else {
+        version += 1;
+      } else {
         quill.updateContents(data.op);
-        version += 1
+        version += 1;
       }
     };
 
@@ -81,20 +84,23 @@ const App = () => {
       /**
        * Whenever the user makes a change to the editor, we send latest OP to the server.
        */
+      if  (version === undefined) {
+        console.log("version is undefined");
+      }
 
       if (source === "user") {
         const op = delta.ops;
-        
+
         fetch(`${API}/doc/op/${docId}/${id}`, {
           method: "POST",
           headers: {
-            "Accept": "application/json",
+            Accept: "application/json",
             "Content-Type": "application/json",
           },
           credentials: "include",
-          body: JSON.stringify({op, version: version}),
+          body: JSON.stringify({ op, version: version }),
         }).then((res) => {
-          // console.log(res);
+          return res.json();
         });
       }
     });
@@ -120,7 +126,6 @@ const App = () => {
   function removeFromList(name) {
     setCursorsList((prev) => prev.filter((cursor) => cursor !== name));
   }
-
 
   function selectionChangeHandler(docId, id) {
     return function (range, oldRange, source) {

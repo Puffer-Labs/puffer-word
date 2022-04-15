@@ -1,5 +1,6 @@
 const multer = require("multer");
 const fs = require("fs");
+const path = require("path");
 const generateRandomID = require("../utils/idGenerator");
 
 /**
@@ -8,7 +9,9 @@ const generateRandomID = require("../utils/idGenerator");
  */
 var storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "./uploads/");
+    const uploadPath =
+      __dirname.split("/").slice(0, -1).join("/") + "/uploads/";
+    cb(null, uploadPath);
   },
   filename: function (req, file, cb) {
     cb(null, `${generateRandomID()}.${file.originalname.split(".").pop()}`);
@@ -28,7 +31,6 @@ const upload = multer({
     cb(null, true);
   },
 });
-
 
 /**
  *
