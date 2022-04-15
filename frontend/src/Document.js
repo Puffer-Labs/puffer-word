@@ -3,11 +3,11 @@ import Quill from "quill";
 import QuillCursors from "quill-cursors";
 import cursors from "./cursors";
 import images from "./images";
+import Queue from "./queue";
 import "quill/dist/quill.snow.css";
 const LOCALHOST_API = "http://localhost:8080";
-const PUBLIC_API = "http://10.1.239.193:8000";
-const API = LOCALHOST_API;
-let version = 0;
+const PUBLIC_API = "http://209.194.58.90:8080";
+const API = PUBLIC_API;
 
 //generate random client id
 const getId = () => {
@@ -28,6 +28,7 @@ const App = () => {
     Quill.register("modules/cursors", QuillCursors);
     //get docId from this component's url
     const docId = window.location.pathname.split("/").pop();
+    const queue = new Queue(docId, id);
     const options = {
       theme: "snow",
       modules: {
@@ -70,12 +71,13 @@ const App = () => {
         cursors.processCursorEvent(data, addToList, removeFromList);
       } else if (data.content) {
         quill.setContents(data.content);
-        version = data.version;
+        queue.setVersion(data.version);
+        queue.process();
       } else if (data.ack) {
-        version += 1;
+        queue.incrementVersion();
       } else {
         quill.updateContents(data.op);
-        version += 1;
+        queue.incrementVersion();
       }
     };
 
@@ -84,24 +86,11 @@ const App = () => {
       /**
        * Whenever the user makes a change to the editor, we send latest OP to the server.
        */
-      if  (version === undefined) {
-        console.log("version is undefined");
-      }
-
+      console.log(source);
       if (source === "user") {
+        console.log("How many times is this running?");
         const op = delta.ops;
-
-        fetch(`${API}/doc/op/${docId}/${id}`, {
-          method: "POST",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify({ op, version: version }),
-        }).then((res) => {
-          return res.json();
-        });
+        queue.enqueue(op);
       }
     });
 
