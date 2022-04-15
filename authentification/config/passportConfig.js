@@ -4,7 +4,7 @@ const passport = require("passport");
 const LocalStraegy = require("passport-local").Strategy;
 
 passport.serializeUser((user, done) => {
-  done(null, user.username);
+  done(null, user.email);
 });
 
 passport.deserializeUser((username, done) => {
@@ -14,8 +14,8 @@ passport.deserializeUser((username, done) => {
 });
 
 passport.use(
-  new LocalStraegy((username, password, done) => {
-    User.findOne({ username: username }, (err, user) => {
+  new LocalStraegy((email, password, done) => {
+    User.findOne({ email: email }, (err, user) => {
       if (err) {
         return done(err);
       }
