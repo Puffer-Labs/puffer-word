@@ -12,7 +12,7 @@ const mediaService = require("../service/mediaService");
  */
 router.post(
   "/upload",
-  mediaService.upload.single("image"),
+  mediaService.upload.single("file"),
   (req, res) => {
     // Save uploaded file and its mime type and return its ID.
     res.json({

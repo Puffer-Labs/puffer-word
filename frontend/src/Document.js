@@ -67,15 +67,15 @@ const App = () => {
        */
       const data = JSON.parse(event.data);
       console.log("On message", data);
-      if (cursors.isRemoteCursorEvent(data, id)) {
-        cursors.processCursorEvent(data, addToList, removeFromList);
+      if (cursors.isRemoteCursorEvent(data.presence, id)) {
+        cursors.processCursorEvent(data.presence, addToList, removeFromList);
       } else if (data.content) {
         quill.setContents(data.content);
         queue.setVersion(data.version);
         queue.process();
       } else if (data.ack) {
         queue.incrementVersion();
-      } else {
+      } else if (data.op) {
         quill.updateContents(data.op);
         queue.incrementVersion();
       }

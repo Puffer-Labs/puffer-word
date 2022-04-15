@@ -106,8 +106,10 @@ class ActiveDocumentPresence {
         console.log(`Range received: ${JSON.stringify(range)} for ${id}`);
         res.write(
           `data: ${JSON.stringify({
-            id: id,
-            cursor: cursor,
+            presence: {
+              id: id,
+              cursor: cursor,
+            },
           })}\n\n`
         );
       });

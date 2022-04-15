@@ -11,12 +11,7 @@ const passport = require('../config/passportConfig');
  */
 
 const isLoggedIn = (req, res, next) => {
-<<<<<<< HEAD
 	if (req.cookies.user) {
-=======
-	if (req.session.passport) {
-		console.log('exiting isLoggedIn');
->>>>>>> 3de6510738ea35d2a9ee5f8f0e970ee8701d35a9
 		next();
 	} else {
 		res.status(401).send('You must be logged in to view this page');

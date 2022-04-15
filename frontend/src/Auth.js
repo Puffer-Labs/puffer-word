@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { withCookies, Cookies } from "react-cookie";
+import { Cookies } from "react-cookie";
+import { API } from "./constants";
 
 const cookies = new Cookies();
 const Auth = () => {
@@ -15,7 +16,7 @@ const Auth = () => {
   const handleLogin = async () => {
     await axios
       .post(
-        "http://localhost:8080/users/login",
+        `${API}/users/login`,
         {
           username: username,
           password: password,
@@ -25,7 +26,7 @@ const Auth = () => {
       .then((res) => {
         console.log(cookies.getAll());
         if (cookies.get("name") !== null) {
-          navigate("/documents");
+          navigate("/home");
         } else {
           console.log("Please login");
         }
@@ -33,7 +34,7 @@ const Auth = () => {
   };
 
   const handleLogout = () => {
-    axios.get("http://localhost:8080/users/logout").then((res) => {
+    axios.get(`${API}/users/logout`).then((res) => {
       let d = new Date();
       d.setTime(d.getTime() + 0);
       cookies.set("user", "temp", { path: "/", expires: d });
@@ -43,7 +44,7 @@ const Auth = () => {
   };
 
   const handleRegister = async () => {
-    await axios.post("http://localhost:8080/users/signup", {
+    await axios.post(`${API}/users/signup`, {
       username: rUsername,
       email: rEmail,
       password: rPassword,

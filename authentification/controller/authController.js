@@ -12,20 +12,20 @@ const middleware = require('../service/middleware');
 
 router.post("/signup", async (req, res) => {
   const newUser = await authService.createUser(req, res);
-  let info = await email.transporter.sendMail({
-    from: "Puffer labs <verify@softpaddle.com>",
-    to: newUser.email,
-    subject: "Welcome to Puffer labs",
-    text: `Welcome to Puffer labs, ${newUser.username}! This is your confirmation link.`,
-    html: `<a href=http://localhost:8080/users/verify?key=${newUser.confirmationCode}>Verify Email</a>`,
-  });
+  // let info = await email.transporter.sendMail({
+  //   from: "Puffer labs <verify@softpaddle.com>",
+  //   to: newUser.email,
+  //   subject: "Welcome to Puffer labs",
+  //   text: `Welcome to Puffer labs, ${newUser.username}! This is your confirmation link.`,
+  //   html: `<a href=http://localhost:8080/users/verify?key=${newUser.confirmationCode}>Verify Email</a>`,
+  // });
   res.status(201);
 });
 
 router.post("/login", middleware.authorize, (req, res) => {
   res.cookie("user", req.user.username, {
     path: "/",
-    maxAge: 10 * 1000,
+    maxAge: 10 * 1000 * 10000,
     sameSite: true,
     secure: false,
   });

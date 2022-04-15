@@ -1,7 +1,7 @@
 /**
  * Functions for dealing with cursors and cursor events.
  */
-const isRemoteCursorEvent = (data, id) => data.cursor !== undefined && data.id !== id;
+const isRemoteCursorEvent = (data, id) => data && data.cursor !== undefined && data.id !== id;
 
 // Maps the cursor id to the cursor object.
 const cursors = {};

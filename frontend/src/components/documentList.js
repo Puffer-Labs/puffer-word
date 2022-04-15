@@ -1,34 +1,54 @@
-import React from "react";
+import axios from "axios";
+import React, { useState } from "react";
 import "./componentStyles/documentList.css";
 import DocumentCard from "./documentCard";
+import { API } from "../constants";
+import { useNavigate } from "react-router-dom";
 
 const DocumentList = (props) => {
+  const [name, setName] = useState("");
   const documents = props.documents;
+  const navigate = useNavigate();
 
   const mapDocs = documents.map((document) => (
-    <DocumentCard
-      title={document.title}
-      author={document.author}
-      created={document.created}
-      key={document.id}
-      id={document.id}
-    />
+    <DocumentCard name={document.name} key={document.id} id={document.id} />
   ));
+
+  const handleNewDocument = () => {
+    axios
+      .post(
+        `${API}/collection/create`,
+        {
+          name: name,
+        },
+        { withCredentials: true }
+      )
+      .then((res) => window.location.reload());
+  };
 
   return (
     <div className="doc-list-element">
       <div className="list-banner">
         <h1>Documents</h1>
-        <button className="new-doc-btn">New Document</button>
+        <input
+          type="text"
+          placeholder="Title"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+        <button className="new-doc-btn" onClick={handleNewDocument}>
+          New Document
+        </button>
       </div>
       <div className="document-table-container">
         <table className="table">
-          <tr className="table-header">
-            <th>Name</th>
-            <th>Author</th>
-            <th>Created Date</th>
-          </tr>
-          {mapDocs}
+          <thead>
+            <tr className="table-header">
+              <th>ID</th>
+              <th>Name</th>
+            </tr>
+          </thead>
+          <tbody>{mapDocs}</tbody>
         </table>
       </div>
     </div>

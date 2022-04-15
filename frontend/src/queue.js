@@ -33,7 +33,7 @@ class Queue {
 	 * and then wait 25 ms before sending the next operation.
 	 */
 	process() {
-		const op = this.dequeue();
+		const op = this.queue[0];
 		if (op) {
 			fetch(`${API}/doc/op/${this.docId}/${this.uId}`, {
 				method: "POST",
@@ -48,10 +48,11 @@ class Queue {
 			}).then((body) => {
 				if (body.status === "ok") {
 					console.log("Successfully sent op");
+					this.dequeue();
 				}
 			});
 		}
-		setTimeout(() => this.process(), 25);
+		setTimeout(() => this.process(), 75);
 	}
 }
 

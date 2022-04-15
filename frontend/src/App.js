@@ -10,15 +10,12 @@ export default function App() {
     <div>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<ProtectedRoute />}>
-            <Route exact path="/" element={<Documents />} />
-          </Route>
           <Route path="/login" element={<Auth />}></Route>
-          <Route path="/documents/:id" element={<ProtectedRoute />}>
-            <Route exact path="/documents/:id" element={<Document />} />
+          <Route path="/doc/edit/:id" element={<ProtectedRoute />}>
+            <Route exact path="/doc/edit/:id" element={<Document />} />
           </Route>
-          <Route path="/documents" element={<ProtectedRoute />}>
-            <Route exact path="/documents" element={<Documents />} />
+          <Route path="/home" element={<ProtectedRoute />}>
+            <Route exact path="/home" element={<Documents />} />
           </Route>
         </Routes>
       </BrowserRouter>

@@ -6,7 +6,6 @@ const port = 8080;
 const passport = require("./config/passportConfig");
 const authController = require("./controller/authController");
 const cors = require("cors");
-const sharedb = require("sharedb");
 require("./config/mongoConfig");
 const sharedbRouter = require("./gateway/sharedbRouter");
 
@@ -45,7 +44,7 @@ app.use((req, res, next) => {
   res.setHeader("X-CSE356", "61f9d6733e92a433bf4fc8dd")
   next();
 });
-app.use("/", authController);
+app.use("/users", authController);
 app.use("/", sharedbRouter);
 
 

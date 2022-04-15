@@ -9,7 +9,7 @@ const handleUpload = (quillInstance) => {
   uploadedImage.onchange = async () => {
     const file = uploadedImage.files[0];
     const formData = new FormData();
-    formData.append("image", file);
+    formData.append("file", file);
 
     fetch(`${MEDIA_URL}/upload`, {
       method: "POST",

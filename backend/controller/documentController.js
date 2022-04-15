@@ -29,9 +29,8 @@ documentRouter.post("/doc/op/:docId/:uId", (req, res) => {
   const docId = req.params.docId;
   const uId = req.params.uId;
   const data = req.body;
-  console.log(data);
   try {
-    documentService.postOp(docId, uId, data, res)
+    documentService.postOp(docId, uId, data, res);
   } catch (err) {
     res.status(400).send({ error: true, message: err.message });
   }
@@ -52,14 +51,13 @@ documentRouter.post("/doc/presence/:docId/:uId", (req, res) => {
 documentRouter.post("/collection/create", (req, res) => {
   const name = req.body.name;
   try {
-    const docid = documentService.createDocument(name, res);
-    res.status(200).send({ docid });
+    documentService.createDocument(name, res);
   } catch (err) {
     res.status(400).send({ error: true, message: err.message });
   }
 });
 
-documentRouter.delete("/collection/delete", (req, res) => {
+documentRouter.post("/collection/delete", (req, res) => {
   const id = req.body.docid;
   try {
     documentService.deleteDocument(id, res);
@@ -69,12 +67,8 @@ documentRouter.delete("/collection/delete", (req, res) => {
 });
 
 documentRouter.get("/collection/list", async (req, res) => {
-  try {
-    const docs = await documentService.getDocuments(res);
-    res.send(docs);
-  } catch (err) {
-    res.status(400).send({ error: true, message: err.message });
-  }
+  const docs = await documentService.getDocuments(res);
+  res.send(docs);
 });
 
 module.exports = documentRouter;

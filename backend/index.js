@@ -8,7 +8,9 @@ const port = 8000;
 api.use(express.json());
 api.use(express.urlencoded({ extended: true }));
 api.use(cookieParser());
-api.use(cors());
+api.use(cors({
+  origin: 'http://localhost:3000',
+}));
 api.use(logger('dev'));
 
 // parser(api);

@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import Header from "../components/header";
 import DocumentList from "../components/documentList";
 import "./pageStyles/documents.css";
+import { API } from "../constants";
 
 /**
  * TODO: replace dummy data with API GET endpoint
@@ -14,52 +15,31 @@ const cookies = new Cookies();
 
 const Documents = () => {
   const navigate = useNavigate();
+  const [documents, setDocuments] = useState([]);
 
-  //dummy docs - replace with API GET endpoint
-  const docs = [
-    {
-      title: "Document 1",
-      author: "Author 1",
-      id: 1,
-      created: "2020-01-01",
-    },
-    {
-      title: "Document 2",
-      author: "Author 2",
-      id: 2,
-      created: "2020-02-01",
-    },
-    {
-      title: "Document 3",
-      author: "Author 3",
-      id: 3,
-      created: "2020-03-01",
-    },
-    {
-      title: "Document 4",
-    },
-  ];
+  useEffect(() => {
+    axios
+      .get(`${API}/collection/list`, { withCredentials: true })
+      .then((res) => setDocuments(res.data));
+  }, []);
 
   const handleLogout = () => {
     axios
-      .get("http://localhost:8080/logout")
-      .then((res) => {
-        let d = new Date();
-        d.setTime(d.getTime() + 0);
-        cookies.set("user", "temp", { path: "/", expires: d });
-        console.log(cookies.getAll());
-        navigate("/login");
-      })
+      .get(`${API}/users/logout`, { withCredentials: true })
+      .then((res) => {})
       .catch((err) => {
         console.log(err);
-        navigate("/login"); //logout sends an error but still logs out????
       });
+    let d = new Date();
+    d.setTime(d.getTime() + 0);
+    cookies.set("user", "temp", { path: "/", expires: d });
+    navigate("/login");
   };
 
   return (
     <div id="home">
       <Header />
-      <DocumentList documents={docs} />
+      <DocumentList documents={documents} />
       <button onClick={() => handleLogout()}>Logout</button>
     </div>
   );
