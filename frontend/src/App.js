@@ -10,6 +10,7 @@ export default function App() {
     <div>
       <BrowserRouter>
         <Routes>
+          <Route path="/" element={<Auth />}></Route>
           <Route path="/login" element={<Auth />}></Route>
           <Route path="/doc/edit/:id" element={<ProtectedRoute />}>
             <Route exact path="/doc/edit/:id" element={<Document />} />

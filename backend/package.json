@@ -11,17 +11,24 @@
   "license": "ISC",
   "dependencies": {
     "@teamwork/websocket-json-stream": "^2.0.0",
+    "bcrypt": "^5.0.1",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "express": "^4.17.3",
+    "express-session": "^1.17.2",
     "mongodb": "^4.5.0",
+    "mongoose": "^6.3.0",
     "morgan": "^1.10.0",
     "morgan-body": "^2.6.6",
     "multer": "^1.4.4",
+    "nodemailer": "^6.7.3",
+    "passport": "^0.5.2",
+    "passport-local": "^1.0.0",
     "quill-delta-to-html": "^0.12.0",
     "rich-text": "^4.1.0",
     "sharedb": "^2.2.5",
     "sharedb-mongo": "^1.0.0",
+    "uuid": "^8.3.2",
     "ws": "^8.5.0"
   }
 }

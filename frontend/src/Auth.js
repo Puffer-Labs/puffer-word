@@ -18,7 +18,7 @@ const Auth = () => {
       .post(
         `${API}/users/login`,
         {
-          username: username,
+          email: username,
           password: password,
         },
         { withCredentials: true }

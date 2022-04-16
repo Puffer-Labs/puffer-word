@@ -1,5 +1,4 @@
-const API = "http://localhost:8080";
-
+const {API} = require("./constants");
 /**
  * This is a running queue of all changes that need 
  * to be sent to the server.

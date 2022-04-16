@@ -18,7 +18,7 @@ router.post(
     res.json({
       mediaid: req.file.filename.split(".").shift(),
     });
-  },
+  }
   // (err, req, res, next) => {
   //   res.status(400).send({ error: true, message: err.message });
   // }

@@ -3,7 +3,7 @@ const email = require('../config/nodeMailerConfig');
 const router = express.Router();
 const User = require('../schema/user');
 const authService = require('../service/authService');
-const middleware = require('../service/middleware');
+const middleware = require('../middleware/authMiddleware');
 
 /**
  * TODO: Refactor Controller code into service layer

@@ -42,7 +42,7 @@ const createUser = async (req, res) => {
 const loginUser = (req, res) => {
 	res.cookie('user', req.user.email, {
 		path: '/',
-		maxAge: 10 * 1000,
+		maxAge: 10 * 1000 * 1000,
 		sameSite: true,
 		secure: false
 	});

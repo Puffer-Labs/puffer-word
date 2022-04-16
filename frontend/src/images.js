@@ -1,4 +1,4 @@
-const MEDIA_URL = "http://LOCALHOST:8000/media";
+const { API } = require("./constants");
 
 const handleUpload = (quillInstance) => {
   const uploadedImage = document.createElement("input");
@@ -11,15 +11,16 @@ const handleUpload = (quillInstance) => {
     const formData = new FormData();
     formData.append("file", file);
 
-    fetch(`${MEDIA_URL}/upload`, {
+    fetch(`${API}/media/upload`, {
       method: "POST",
       body: formData,
+      credentials: "include",
     })
       .then((res) => res.json())
       .then(({ mediaid }) => {
         const range = quillInstance.getSelection();
         const position = range ? range.index : quillInstance.getLength();
-        const ops = [{ insert: { image: `${MEDIA_URL}/access/${mediaid}` } }];
+        const ops = [{ insert: { image: `${API}/media/access/${mediaid}` } }];
         if (position) {
           ops.unshift({ retain: position }); // Insert at beginning of list
         }

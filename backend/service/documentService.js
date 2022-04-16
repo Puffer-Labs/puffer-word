@@ -1,5 +1,5 @@
 const ShareDB = require("../config/sharedbConfig");
-const mongoDBClient = require("../config/mongoConfig");
+const { mongoDBClient } = require("../config/mongoConfig");
 const generateRandomID = require("../utils/idGenerator");
 const ActiveDocumentPresence = require("./activeDocuments");
 const QuillDeltaToHtmlConverter =
@@ -102,7 +102,11 @@ const postOp = (docId, uId, data, res) => {
   const document = ShareDB.sharedb_connection.get("documents", docId);
   document.fetch(() => {
     console.log(
-      `Submitting op ${JSON.stringify(op)} to ${uId} with version ${version}. Document version is ${document.version}`
+      `Submitting op ${JSON.stringify(
+        op
+      )} to ${uId} with version ${version}. Document version is ${
+        document.version
+      }`
     );
     if (version != document.version) {
       res.status(400).send({ status: "retry" });
@@ -223,6 +227,7 @@ const getDocuments = async (res) => {
       .toArray();
     return docs;
   } catch (err) {
+    console.log(err);
     res.status(400).send({
       error: true,
       message: "Error while getting ten most recent documents",

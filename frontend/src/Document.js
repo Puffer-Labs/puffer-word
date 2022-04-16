@@ -5,9 +5,7 @@ import cursors from "./cursors";
 import images from "./images";
 import Queue from "./queue";
 import "quill/dist/quill.snow.css";
-const LOCALHOST_API = "http://localhost:8080";
-const PUBLIC_API = "http://209.194.58.90:8080";
-const API = LOCALHOST_API;
+const {API} = require("./constants");
 
 //generate random client id
 const getId = () => {

@@ -14,7 +14,10 @@ const isLoggedIn = (req, res, next) => {
 	if (req.session.passport) {
 		next();
 	} else {
-		res.status(401).send('You must be logged in to view this page');
+		res.status(401).send({
+			error: true,
+			message: 'You must be logged in to access this resource.'
+		});
 	}
 };
 
