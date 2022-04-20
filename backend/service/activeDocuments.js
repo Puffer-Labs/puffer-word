@@ -43,6 +43,9 @@ class ActiveDocumentPresence {
    * then the active document is deleted.
    */
   removeConnection(docId, uId, email) {
+    if (!this.activeDocuments[docId][uId]) {
+      return;
+    }
     const presence = this.activeDocuments[docId][uId].getDocPresence(
       this._COLLECTION_NAME,
       docId
@@ -52,9 +55,10 @@ class ActiveDocumentPresence {
     delete this.activeDocuments[docId][uId];
     delete this.idToEmailMap[uId];
 
-    if (Object.keys(this.activeDocuments[docId]).length === 0) {
-      delete this.activeDocuments[docId];
-    }
+    // if (Object.keys(this.activeDocuments[docId]).length === 0) {
+    //   console.log("deleting active doc");
+    //   delete this.activeDocuments[docId];
+    // }
   }
 
   /**
@@ -87,12 +91,12 @@ class ActiveDocumentPresence {
         else console.log("Initial presence submission received");
       });
 
-      this.setupRemotePresences(presence, uId, docId);
+      //this.setupRemotePresences(presence, uId, docId);
 
       // Send initial cursor position to all other users of the document.
-      this.getCurrentCursorData(presence).forEach((data) =>
-        res.write(`data: ${JSON.stringify(data)}\n\n`)
-      );
+      //this.getCurrentCursorData(presence).forEach((data) =>
+      //res.write(`data: ${JSON.stringify(data)}\n\n`)
+      //);
 
       presence.on("receive", (id, range) => {
         let cursor = null;
@@ -103,7 +107,6 @@ class ActiveDocumentPresence {
             length: range.length,
           };
 
-        console.log(`Range received: ${JSON.stringify(range)} for ${id}`);
         res.write(
           `data: ${JSON.stringify({
             presence: {
@@ -182,10 +185,8 @@ class ActiveDocumentPresence {
        * Here, we get the local presence for the client and then update its range.
        * This will then notify all other clients of this client's new cursor position.
        */
-      console.log("Range before callback", range);
       presence.localPresences[uId].submit(range, (err) => {
         if (err) console.error(err);
-        else console.log("Range at `submit`", range);
       });
     });
   };
