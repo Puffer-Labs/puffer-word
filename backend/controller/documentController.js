@@ -3,35 +3,72 @@ const documentRouter = express.Router();
 const documentService = require("../service/documentService");
 
 //get stream and connect to document
-documentRouter.get("/connect/:id", (req, res) => {
-  const id = req.params.id;
-  res.set("X-CSE356", "61f9d6733e92a433bf4fc8dd");
+documentRouter.get("/doc/connect/:docId/:uId", (req, res) => {
+  const docId = req.params.docId;
+  const uId = req.params.uId;
+  const email = req.cookies.user;
+
   try {
-    documentService.connectToDocument(id, res);
+    documentService.connectToDocument(docId, uId, res, email);
   } catch (err) {
-    console.log(err);
+    res.status(400).send({ error: true, message: err.message });
   }
 });
 
-documentRouter.get("/doc/:id", (req, res) => {
-  const id = req.params.id;
-  res.set("X-CSE356", "61f9d6733e92a433bf4fc8dd");
+documentRouter.get("/doc/get/:docId/:uId", (req, res) => {
+  const docId = req.params.docId;
+  const uId = req.params.uId;
   try {
-    documentService.getDocumentHTML(id, res);
+    documentService.getDocumentHTML(docId, uId, res);
   } catch (err) {
-    console.log(err);
+    res.status(400).send({ error: true, message: err.message });
   }
 });
 
-documentRouter.post("/op/:id", (req, res) => {
-  const id = req.params.id;
-  const ops = req.body;
-  res.set("X-CSE356", "61f9d6733e92a433bf4fc8dd");
+documentRouter.post("/doc/op/:docId/:uId", (req, res) => {
+  const docId = req.params.docId;
+  const uId = req.params.uId;
+  const data = req.body;
   try {
-    documentService.postOps(id, ops, res);
+    documentService.postOp(docId, uId, data, res);
   } catch (err) {
-    console.log(err);
+    res.status(400).send({ error: true, message: err.message });
   }
+});
+
+documentRouter.post("/doc/presence/:docId/:uId", (req, res) => {
+  const docId = req.params.docId;
+  const uId = req.params.uId;
+  const range = req.body;
+  try {
+    documentService.submitPresenceRange(docId, uId, range, res);
+    res.json("success");
+  } catch (err) {
+    res.status(400).send({ error: true, message: err.message });
+  }
+});
+
+documentRouter.post("/collection/create", (req, res) => {
+  const name = req.body.name;
+  try {
+    documentService.createDocument(name, res);
+  } catch (err) {
+    res.status(400).send({ error: true, message: err.message });
+  }
+});
+
+documentRouter.post("/collection/delete", (req, res) => {
+  const id = req.body.docid;
+  try {
+    documentService.deleteDocument(id, res);
+  } catch (err) {
+    res.status(400).send({ error: true, message: err.message });
+  }
+});
+
+documentRouter.get("/collection/list", async (req, res) => {
+  const docs = await documentService.getDocuments(res);
+  res.status(200).send(docs);
 });
 
 module.exports = documentRouter;
