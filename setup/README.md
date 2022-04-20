@@ -6,7 +6,7 @@ Build and launch the compose file:
 docker-compose up --build -d
 ```
 
-We need the IP address of the mongo container.
+We need the IP address of the mongo container. Get the mongo container ID through `docker ps`
 
 ```
 docker inspect <mongo-container-id>
