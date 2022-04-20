@@ -1,10 +1,27 @@
-# https://www.elastic.co/guide/en/elasticsearch/reference/6.x/settings.html
-######################-------------------------################################
-#if you have a trouble in this configure you can see :
-#https://github.com/ziedtuihri
-#or you can contact me by :
-#https://twitter.com/ziedtuihri or zied.th0@gmail.com
-######################-------------------------################################
+##################### Elasticsearch Configuration Example #####################
+
+# This file contains an overview of various configuration settings,
+# targeted at operations staff. Application developers should
+# consult the guide at <http://elasticsearch.org/guide>.
+#
+# The installation procedure is covered at
+# <http://elasticsearch.org/guide/en/elasticsearch/reference/current/setup.html>.
+#
+# Elasticsearch comes with reasonable defaults for most settings,
+# so you can try it out without bothering with configuration.
+#
+# Most of the time, these defaults are just fine for running a production
+# cluster. If you're fine-tuning your cluster, or wondering about the
+# effect of certain configuration option, please _do ask_ on the
+# mailing list or IRC channel [http://elasticsearch.org/community].
+
+# Any element in the configuration can be replaced with environment variables
+# by placing them in ${...} notation. For example:
+#
+#node.rack: ${RACK_ENV_VAR}
+
+# For information on supported formats and syntax for the config file, see
+# <http://elasticsearch.org/guide/en/elasticsearch/reference/current/setup-configuration.html>
 
 # https://www.elastic.co/guide/en/elasticsearch/reference/6.x/node.name.html
 
@@ -14,7 +31,6 @@
 # multiple clusters on the same network, make sure you're using unique names.
 #
 cluster.name: "Product-cluster"
-
 
 #################################### Node #####################################
 
@@ -73,7 +89,6 @@ action.auto_create_index: true
 thread_pool:
   bulk:
     queue_size: 200
-
 # https://www.elastic.co/guide/en/elasticsearch/reference/6.x/heap-size.html
 
 # https://www.elastic.co/guide/en/elasticsearch/reference/6.x/path-settings.html
@@ -81,11 +96,10 @@ thread_pool:
 #   logs: data/log
 #   logs: /var/log/elasticsearch
 #   data: /var/data/elasticsearch
-  # data:
-  #   - /mnt/elasticsearch_1
-  #   - /mnt/elasticsearch_2
-  #   - /mnt/elasticsearch_3
-
+# data:
+#   - /mnt/elasticsearch_1
+#   - /mnt/elasticsearch_2
+#   - /mnt/elasticsearch_3
 
 # A command to run elasticsearch in docker
 # docker run --name es -d -p 9200:9200 elasticsearch:2 -Des.http.port=9200 -Des.http.cors.allow-origin="http://127.0.0.1:3030" -Des.http.cors.enabled=true -Des.http.cors.allow-headers=X-Requested-With,X-Auth-Token,Content-Type,Content-Length,Authorization -Des.http.cors.allow-credentials=true
