@@ -4,6 +4,7 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const logger = require("morgan");
 const session = require("express-session");
+const parser = require("morgan-body");
 
 const documentController = require("./controller/documentController");
 const mediaController = require("./controller/mediaController");
@@ -24,9 +25,13 @@ const mongoDBClient = require("./config/mongoConfig");
 api.use(cookieParser());
 api.use(
   cors({
-    origin: "http://localhost:3000",
+	  origin: ["http://pufferlabs.cse356.compas.cs.stonybrook.edu", "http://localhost:3000"],
     credentials: true,
   })
+  // cors({
+  //   origin: "http://localhost:3000",
+  //   credentials: true,
+  // })
 );
 api.use(
   session({
@@ -43,11 +48,15 @@ api.use(
 );
 api.use(passport.initialize());
 api.use(passport.session());
-api.use(logger("dev"));
+//api.use(logger("dev"));
 
 // parser(api);
 
 // Controllers
+api.use((req, res, next) => {
+	res.setHeader("X-CSE356", "61f9d6733e92a433bf4fc8dd");
+	next();
+});
 api.use("/users", authController);
 api.use("/media", authMiddleware.isLoggedIn, mediaController);
 api.use("/", authMiddleware.isLoggedIn, documentController);

@@ -13,7 +13,7 @@ router.post('/signup', async (req, res) => {
 	authService.createUser(req, res);
 });
 
-router.post('/login', [middleware.isVerified, middleware.authorize], (req, res) => {
+router.post('/login', [middleware.authorize, middleware.isVerified], (req, res) => {
 	authService.loginUser(req, res);
 });
 
@@ -24,11 +24,5 @@ router.get('/verify', (req, res) => {
 router.get('/logout', [ middleware.isLoggedIn, middleware.logout ], (req, res) => {
 	authService.logout(req, res);
 });
-
-// Remove the + and everything  after up to the @ from the email
-function removeDelimeterFromEmail(email) {
-	return email.split('+')[0].join("@").split('@')[1];
-}
-
 
 module.exports = router;

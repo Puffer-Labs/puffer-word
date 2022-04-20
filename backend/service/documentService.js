@@ -4,6 +4,7 @@ const generateRandomID = require("../utils/idGenerator");
 const ActiveDocumentPresence = require("./activeDocuments");
 const QuillDeltaToHtmlConverter =
   require("quill-delta-to-html").QuillDeltaToHtmlConverter;
+let lastOKrequestVersion = 0;
 // const document = ShareDB.document;
 
 //TODO:
@@ -42,13 +43,14 @@ const connectToDocument = (docId, uId, res, email) => {
       return;
     }
 
-    // Add client ID to active connections
+    // // Add client ID to active connections
     if (!activeDocumentPresence.addNewConnection(docId, uId)) {
       res
-        .status(400)
+        .status(200)
         .send({ error: true, message: "Active user with this Id" });
       return;
     }
+
 
     setUpConnectedDocumentResponse(res, {
       docId,
@@ -63,10 +65,9 @@ const connectToDocument = (docId, uId, res, email) => {
     document.on("op", (op, source) => {
       // If the incoming op is from the client, ignore it
       if (source !== uId) {
-        res.write("data: " + JSON.stringify({ op }) + "\n\n");
+        res.write("data: " + JSON.stringify(op) + "\n\n");
       } else res.write("data: " + JSON.stringify({ ack: op }) + "\n\n");
     });
-    console.log("Connected to document");
   });
 };
 
@@ -100,21 +101,14 @@ const submitPresenceRange = (docId, uId, range, res) => {
 const postOp = (docId, uId, data, res) => {
   const { op, version } = data;
   const document = ShareDB.sharedb_connection.get("documents", docId);
-  document.fetch(() => {
-    console.log(
-      `Submitting op ${JSON.stringify(
-        op
-      )} to ${uId} with version ${version}. Document version is ${
-        document.version
-      }`
-    );
-    if (version != document.version) {
-      res.status(400).send({ status: "retry" });
-    } else {
-      document.submitOp(op, { source: uId });
-      res.status(200).send({ status: "ok" });
-    }
+	if (!(version == document.version && lastOKrequestVersion != version)) {
+    res.status(200).send({ status: "retry", serverVersion: document.version, requestVersion: version });
+	} else {
+    lastOKrequestVersion = version;
+    document.submitOp(op, { source: uId }, () => {
+    res.status(200).send({ op: op, status: "ok", serverVersion: document.version, requestVersion: version });
   });
+	}
 };
 
 /**

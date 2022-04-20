@@ -12,9 +12,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Auth />}></Route>
           <Route path="/login" element={<Auth />}></Route>
-          <Route path="/doc/edit/:id" element={<ProtectedRoute />}>
-            <Route exact path="/doc/edit/:id" element={<Document />} />
-          </Route>
+          <Route exact path="/doc/edit/:id" element={<Document />} />
           <Route path="/home" element={<ProtectedRoute />}>
             <Route exact path="/home" element={<Documents />} />
           </Route>

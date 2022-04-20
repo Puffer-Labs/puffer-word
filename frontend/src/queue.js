@@ -51,7 +51,7 @@ class Queue {
 				}
 			});
 		}
-		setTimeout(() => this.process(), 75);
+		setTimeout(() => this.process(), 25);
 	}
 }
 

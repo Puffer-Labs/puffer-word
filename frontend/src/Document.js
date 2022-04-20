@@ -64,7 +64,7 @@ const App = () => {
        * 3. {data: {cursor: {connClosed: boolean, id: string, position: number}}} This is the cursor position of one of the clients that was updated.
        */
       const data = JSON.parse(event.data);
-      console.log("On message", data);
+      console.log("On message", event);
       if (cursors.isRemoteCursorEvent(data.presence, id)) {
         cursors.processCursorEvent(data.presence, addToList, removeFromList);
       } else if (data.content) {
@@ -73,8 +73,8 @@ const App = () => {
         queue.process();
       } else if (data.ack) {
         queue.incrementVersion();
-      } else if (data.op) {
-        quill.updateContents(data.op);
+      } else if (data) {
+        quill.updateContents(data);
         queue.incrementVersion();
       }
     };
