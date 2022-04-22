@@ -45,7 +45,7 @@ const Auth = () => {
 
   const handleRegister = async () => {
     await axios.post(`${API}/users/signup`, {
-      username: rUsername,
+      name: rUsername,
       email: rEmail,
       password: rPassword,
     });
