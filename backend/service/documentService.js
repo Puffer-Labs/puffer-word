@@ -51,7 +51,6 @@ const connectToDocument = (docId, uId, res, email) => {
       return;
     }
 
-
     setUpConnectedDocumentResponse(res, {
       docId,
       uId,
@@ -101,14 +100,27 @@ const submitPresenceRange = (docId, uId, range, res) => {
 const postOp = (docId, uId, data, res) => {
   const { op, version } = data;
   const document = ShareDB.sharedb_connection.get("documents", docId);
-	if (!(version == document.version && lastOKrequestVersion != version)) {
-    res.status(200).send({ status: "retry", serverVersion: document.version, requestVersion: version });
-	} else {
+  if (!(version == document.version && lastOKrequestVersion != version)) {
+    res
+      .status(200)
+      .send({
+        status: "retry",
+        serverVersion: document.version,
+        requestVersion: version,
+      });
+  } else {
     lastOKrequestVersion = version;
     document.submitOp(op, { source: uId }, () => {
-    res.status(200).send({ op: op, status: "ok", serverVersion: document.version, requestVersion: version });
-  });
-	}
+      res
+        .status(200)
+        .send({
+          op: op,
+          status: "ok",
+          serverVersion: document.version,
+          requestVersion: version,
+        });
+    });
+  }
 };
 
 /**
@@ -229,6 +241,22 @@ const getDocuments = async (res) => {
     return;
   }
 };
+
+//Periodic reindex of active document contents into elasticsearch
+// setInterval(() => {
+//   //convert every active document
+//   Object.keys(activeDocumentPresence.activeDocuments).forEach((docId) => {
+//     const document = ShareDB.sharedb_connection.get("documents", docId);
+//     document.fetch(() => {
+//       //try to grab existing document
+//       const parser = new QuillDeltaToHtmlConverter(document.data.ops, {}).convert();
+//       console.log(`PERIODIC PUSH TO ELASTIC SEARCH (ID : ${docId}): \n"`+ parser.convert());
+//       console.log("########################################################");
+//     });
+//     console.log("\n\n\n");
+//   });
+// }, 10 * 1000);
+
 
 module.exports = {
   connectToDocument,

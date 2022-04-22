@@ -1,4 +1,6 @@
 // Imports
+const dotenv = require('dotenv');
+dotenv.config();
 const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
@@ -24,14 +26,14 @@ const mongoDBClient = require("./config/mongoConfig");
 // Import Setup
 api.use(cookieParser());
 api.use(
-  cors({
-	  origin: ["http://pufferlabs.cse356.compas.cs.stonybrook.edu", "http://localhost:3000"],
-    credentials: true,
-  })
   // cors({
-  //   origin: "http://localhost:3000",
+	//   origin: ["http://pufferlabs.cse356.compas.cs.stonybrook.edu", "http://localhost:3000"],
   //   credentials: true,
   // })
+  cors({
+    origin: "http://localhost:3000",
+    credentials: true,
+  })
 );
 api.use(
   session({
@@ -66,13 +68,35 @@ api.get("/cookie", (req, res) => {
   res.send("Hello World!");
 });
 
-api.listen(port, () => {
+const backend = api.listen(port, async () => {
   console.log(`API running on port ${port}`);
+  const esClient = require("./config/elasticsearchConfig");
+  await esClient.index({
+    index: "test",
+    document: {
+      name: "test",
+      age: "testAge and random augh",
+    }
+  });
+  await esClient.indices.refresh({
+    index: "test"
+  });
+  const result = await esClient.search({
+    index: "test",
+    query: {
+      match: {
+        age: "augh"
+      }
+    }
+  });
+  console.log(result.hit.hits);
+
+
 });
 
 process.on("SIGINT", () => {
   //graceful shutdown, close db connection
-  api.close(() => {
+  backend.close(() => {
     mongoDBClient.close();
     console.log("Server closed. Database instance disconnected");
   });

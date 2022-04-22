@@ -1,9 +1,8 @@
 {
   "scripts": {
-    "all": "concurrently --names \"SHAREDB,AUTH,REACT\" -c \"bgRed,bgBlue,bgGreen\" \"cd backend && node index.js\" \"cd authentification && node index.js\" \"cd frontend && npm start\"",
+    "all": "concurrently --names \"SHAREDB,REACT\" -c \"bgRed,bgBlue,bgGreen\" \"cd backend && node index.js\" \"cd frontend && npm start\"",
     "backend": "concurrently --names \"SHAREDB\" -c \"bgRed\" \"cd backend && node index.js\"",
-    "frontend": "concurrently --names \"REACT\" -c \"bgGreen\" \"cd frontend && npm start\"",
-    "auth": "concurrently --names \"AUTH\" -c \"bgGreen\" \"cd authentification && node index.js\""
+    "frontend": "concurrently --names \"REACT\" -c \"bgGreen\" \"cd frontend && npm start\""
   },
   "dependencies": {
     "concurrently": "^7.1.0"
