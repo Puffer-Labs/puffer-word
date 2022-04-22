@@ -68,7 +68,6 @@ documentRouter.post("/collection/delete", (req, res) => {
 });
 
 documentRouter.get("/collection/list", async (req, res) => {
-  console.log(worker);
   const docs = await documentService.getDocuments(res);
   res.status(200).send(docs);
 });

@@ -20,12 +20,6 @@ let lastOKrequestVersion = 0;
 const activeDocumentPresence = new ActiveDocumentPresence();
 
 /**
- * Each client should have their own connection to a specific document.
- * We are using this dictionary to map each client's ID to their connection.
- */
-const connectionIds = {};
-
-/**
  *
  * @param {string} id - id of the client
  * @param {Response} res - Response object
@@ -103,25 +97,21 @@ const postOp = (docId, uId, data, res) => {
   const { op, version } = data;
   const document = ShareDB.sharedb_connection.get("documents", docId);
   if (!(version == document.version && lastOKrequestVersion != version)) {
-    res
-      .status(200)
-      .send({
-        status: "retry",
-        serverVersion: document.version,
-        requestVersion: version,
-      });
+    res.status(200).send({
+      status: "retry",
+      serverVersion: document.version,
+      requestVersion: version,
+    });
   } else {
     lastOKrequestVersion = version;
     document.submitOp(op, { source: uId }, () => {
-      worker.addDoc(docId);
-      res
-        .status(200)
-        .send({
-          op: op,
-          status: "ok",
-          serverVersion: document.version,
-          requestVersion: version,
-        });
+      worker.add(docId);
+      res.status(200).send({
+        op: op,
+        status: "ok",
+        serverVersion: document.version,
+        requestVersion: version,
+      });
     });
   }
 };
