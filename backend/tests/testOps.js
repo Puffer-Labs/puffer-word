@@ -12,8 +12,9 @@ const url = [
 ];
 
 export const options = {
-	vus: 400,
-	iterations: 400
+	stages: [ { duration: '10s', target: 20 }, { duration: '10s', target: 0 } ]
+	// vus: 10,
+	// iterations: 10
 };
 
 export function setup() {
