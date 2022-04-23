@@ -9,10 +9,10 @@ const initTestUsers = async () => {
 			email: `test${i}@test.com`,
 			status: true
 		};
-		authService.createTestUser(newUser);
+		await authService.createTestUser(newUser);
 	}
 	console.log('Users created');
-	return;
+	process.kill(0);
 };
 
 initTestUsers();
