@@ -1,8 +1,6 @@
 import http from 'k6/http';
 import { sleep, check } from 'k6';
-import { SharedArray } from 'k6/data';
 import { uuidv4 } from 'https://jslib.k6.io/k6-utils/1.2.0/index.js';
-// import uuid from './uuid.js';
 
 const url = [
 	'http://localhost:8000/users/login',
@@ -12,9 +10,9 @@ const url = [
 ];
 
 export const options = {
-	stages: [ { duration: '10s', target: 20 }, { duration: '10s', target: 0 } ]
-	// vus: 10,
-	// iterations: 10
+	// stages: [ { duration: '10s', target: 20 }, { duration: '10s', target: 0 } ]
+	vus: 100,
+	iterations: 100
 };
 
 export function setup() {
@@ -56,6 +54,7 @@ export default function() {
 	let newId = uuidv4();
 	const res2 = http.get(url[1] + `/${doc.id}/${newId}`, { cookies: vuJar });
 	console.log(res2.body);
+
 	check(res2, {
 		'conneted to doc': (r) => r.status === 200
 	});

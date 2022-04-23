@@ -70,6 +70,7 @@ api.listen(port, () => {
 	console.log(`API running on port ${port}`);
 });
 
+// process.setMaxListeners(0); //to avoid max listeners warning
 process.on('SIGINT', () => {
 	//graceful shutdown, close db connection
 	mongoDBClient.mongoDBClient.close();
