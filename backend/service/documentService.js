@@ -242,20 +242,6 @@ const getDocuments = async (res) => {
   }
 };
 
-//Periodic reindex of active document contents into elasticsearch
-// setInterval(() => {
-//   //convert every active document
-//   Object.keys(activeDocumentPresence.activeDocuments).forEach((docId) => {
-//     const document = ShareDB.sharedb_connection.get("documents", docId);
-//     document.fetch(() => {
-//       //try to grab existing document
-//       const parser = new QuillDeltaToHtmlConverter(document.data.ops, {}).convert();
-//       console.log(`PERIODIC PUSH TO ELASTIC SEARCH (ID : ${docId}): \n"`+ parser.convert());
-//       console.log("########################################################");
-//     });
-//     console.log("\n\n\n");
-//   });
-// }, 10 * 1000);
 
 
 module.exports = {
