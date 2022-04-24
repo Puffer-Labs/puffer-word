@@ -4,6 +4,8 @@ const generateRandomID = require("../utils/idGenerator");
 const ActiveDocumentPresence = require("./activeDocuments");
 const QuillDeltaToHtmlConverter =
   require("quill-delta-to-html").QuillDeltaToHtmlConverter;
+
+const worker = require("./documentWorker");
 let lastOKrequestVersion = 0;
 // const document = ShareDB.document;
 
@@ -16,12 +18,6 @@ let lastOKrequestVersion = 0;
 // ex for one active document, activeDocuments["default"]
 // { "default": { "connection1": connectionObj, "connection2": connectionObj } }
 const activeDocumentPresence = new ActiveDocumentPresence();
-
-/**
- * Each client should have their own connection to a specific document.
- * We are using this dictionary to map each client's ID to their connection.
- */
-const connectionIds = {};
 
 /**
  *
@@ -101,24 +97,21 @@ const postOp = (docId, uId, data, res) => {
   const { op, version } = data;
   const document = ShareDB.sharedb_connection.get("documents", docId);
   if (!(version == document.version && lastOKrequestVersion != version)) {
-    res
-      .status(200)
-      .send({
-        status: "retry",
-        serverVersion: document.version,
-        requestVersion: version,
-      });
+    res.status(200).send({
+      status: "retry",
+      serverVersion: document.version,
+      requestVersion: version,
+    });
   } else {
     lastOKrequestVersion = version;
     document.submitOp(op, { source: uId }, () => {
-      res
-        .status(200)
-        .send({
-          op: op,
-          status: "ok",
-          serverVersion: document.version,
-          requestVersion: version,
-        });
+      worker.enqueue(docId);
+      res.status(200).send({
+        op: op,
+        status: "ok",
+        serverVersion: document.version,
+        requestVersion: version,
+      });
     });
   }
 };
@@ -175,6 +168,8 @@ const createDocument = (name, res) => {
         .db("test")
         .collection("names")
         .insertOne({ _id: id, name: name });
+
+      worker.add(id, name);
     } else {
       res
         .status(400)
@@ -193,6 +188,7 @@ const deleteDocument = (id, res) => {
   doc.fetch(() => {
     if (doc.type) {
       doc.del();
+      worker.delete(id);
       res.send("success");
     } else
       res
@@ -241,8 +237,6 @@ const getDocuments = async (res) => {
     return;
   }
 };
-
-
 
 module.exports = {
   connectToDocument,

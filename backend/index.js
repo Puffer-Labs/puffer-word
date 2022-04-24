@@ -13,6 +13,7 @@ const mediaController = require("./controller/mediaController");
 const authController = require("./controller/authController");
 const authMiddleware = require("./middleware/authMiddleware");
 
+
 // Express Setup
 const api = express();
 const port = 8000;
@@ -22,6 +23,7 @@ api.use(express.urlencoded({ extended: true }));
 // Configs
 const passport = require("./config/passportConfig");
 const mongoDBClient = require("./config/mongoConfig");
+const elasticConfig = require("./config/elasticConfig");
 
 // Import Setup
 api.use(cookieParser());
@@ -61,7 +63,7 @@ api.use((req, res, next) => {
 });
 api.use("/users", authController);
 api.use("/media", authMiddleware.isLoggedIn, mediaController);
-api.use("/", authMiddleware.isLoggedIn, documentController);
+api.use("/", documentController);
 
 api.get("/cookie", (req, res) => {
   console.log(req.cookies);
@@ -70,27 +72,7 @@ api.get("/cookie", (req, res) => {
 
 const backend = api.listen(port, async () => {
   console.log(`API running on port ${port}`);
-  const esClient = require("./config/elasticsearchConfig");
-  await esClient.index({
-    index: "test",
-    document: {
-      name: "test",
-      age: "testAge and random augh",
-    }
-  });
-  await esClient.indices.refresh({
-    index: "test"
-  });
-  const result = await esClient.search({
-    index: "test",
-    query: {
-      match: {
-        age: "augh"
-      }
-    }
-  });
-  console.log(result.hit.hits);
-
+  
 
 });
 

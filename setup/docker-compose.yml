@@ -1,0 +1,62 @@
+version: "2.3"
+networks:
+  test:
+    driver: bridge
+
+services:
+  db:
+    image: mongo:latest
+    expose:
+      - "27017"
+    container_name: mongodb
+    volumes:
+      - ./mongodb:/data/db
+      - ./mongodb_config:/data/configdb
+    ports:
+      - "27018:27017"
+    command: mongod --replSet rs0
+    networks:
+      - test
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.8.7
+    container_name: elasticsearch
+    volumes:
+      - ./elastic:/usr/share/elasticsearch/data
+      - ./elastic/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+    ports:
+      - 9200:9200
+    command: elasticsearch -Enetwork.host=_local_,_site_ -Enetwork.publish_host=_local_
+    healthcheck:
+      test: "wget -q -O - http://localhost:9200/_cat/health"
+      interval: 1s
+      timeout: 30s
+      retries: 300
+    networks:
+      - test
+
+  monstache:
+    image: rwynn/monstache:rel4
+    expose:
+      - "8080"
+    ports:
+      - "8080:8080"
+    container_name: monstache
+    # with one Collection on Mongodb you can use
+    #command: -mongo-url=mongodb://db:27017 -elasticsearch-url=http://elasticsearch:9200 -direct-read-namespace=Product_DB.Product -direct-read-split-max=2
+    # this command don't work !!!!
+    #command: -f ./monstache.test.config.toml
+    environment:
+      - MONSTACHE_MONGO_URL=mongodb://db:27017
+      - MONSTACHE_ES_URLS=http://elasticsearch:9200
+      - MONSTACHE_DIRECT_READ_NS=Product_DB.Product,Product_DB.Category,Product_DB.Mark,Product_DB.Model
+    links:
+      - elasticsearch
+      - db
+    depends_on:
+      db:
+        condition: service_started
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - test

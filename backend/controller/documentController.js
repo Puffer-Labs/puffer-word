@@ -1,6 +1,7 @@
 const express = require("express");
 const documentRouter = express.Router();
 const documentService = require("../service/documentService");
+const worker = require("../service/documentWorker");
 
 //get stream and connect to document
 documentRouter.get("/doc/connect/:docId/:uId", (req, res) => {
