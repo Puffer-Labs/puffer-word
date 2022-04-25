@@ -51,9 +51,9 @@ api.use(
 );
 api.use(passport.initialize());
 api.use(passport.session());
-//api.use(logger("dev"));
+// api.use(logger("dev"));
 
-// parser(api);
+parser(api);
 
 // Controllers
 api.use((req, res, next) => {
