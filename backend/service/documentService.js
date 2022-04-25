@@ -238,35 +238,6 @@ const getDocuments = async (res) => {
   }
 };
 
-//**
- * 
- * @param {*} query 
- * @param {*} res 
- * @returns 
- */
-const searchDocuments = async (query, res) => {
-  try {
-    let results = await worker.search(query);
-    return results.hits.hits.map((hit) => {
-      return {
-        docid: hit._id,
-        name: hit._source.title,
-        snippet:
-          hit.highlight.content !== undefined
-            ? hit.highlight.content[0]
-            : hit.highlight.title[0],
-      };
-    });
-  } catch (err) {
-    console.log(err);
-    res.status(400).send({
-      error: true,
-      message: "Error while searching documents",
-    });
-    return;
-  }
-};
-
 module.exports = {
   connectToDocument,
   getDocumentHTML,
@@ -275,5 +246,4 @@ module.exports = {
   createDocument,
   deleteDocument,
   getDocuments,
-  searchDocuments,
 };

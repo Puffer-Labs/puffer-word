@@ -1,7 +1,6 @@
 const express = require("express");
 const documentRouter = express.Router();
 const documentService = require("../service/documentService");
-const worker = require("../service/documentWorker");
 
 //get stream and connect to document
 documentRouter.get("/doc/connect/:docId/:uId", (req, res) => {
@@ -69,12 +68,6 @@ documentRouter.post("/collection/delete", (req, res) => {
 
 documentRouter.get("/collection/list", async (req, res) => {
   const docs = await documentService.getDocuments(res);
-  res.status(200).send(docs);
-});
-
-documentRouter.get("/index/search", async (req, res) => {
-  const query = req.query.q;
-  const docs = await documentService.searchDocuments(query, res);
   res.status(200).send(docs);
 });
 

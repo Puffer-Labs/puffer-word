@@ -25,7 +25,7 @@ const upload = multer({
   storage: storage,
   limits: { fileSize: 10000000 },
   fileFilter: function (req, file, cb) {
-    if (!file.originalname.match(/\.(jpeg|png|jpg)$/)) {
+    if (!file.originalname.match(/\.(jpeg|png|jpg|gif)$/)) {
       return cb(new Error("Only image files are allowed!"));
     }
     cb(null, true);
@@ -52,6 +52,8 @@ const getFile = (res, mediaId) => {
     res.sendFile(`${uploadPath}.png`);
   } else if (fs.existsSync(uploadPath + ".jpg")) {
     res.sendFile(`${uploadPath}.jpg`);
+  } else if (fs.existsSync(uploadPath + ".gif")) {
+    res.sendFile(`${uploadPath}.gif`);
   } else {
     res.status(404).send({ error: true, message: "File not found!" });
   }

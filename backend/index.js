@@ -9,6 +9,7 @@ const session = require("express-session");
 const parser = require("morgan-body");
 
 const documentController = require("./controller/documentController");
+const indexController = require("./controller/indexController");
 const mediaController = require("./controller/mediaController");
 const authController = require("./controller/authController");
 const authMiddleware = require("./middleware/authMiddleware");
@@ -61,8 +62,9 @@ api.use((req, res, next) => {
   next();
 });
 api.use("/users", authController);
-api.use("/media", authMiddleware.isLoggedIn, mediaController);
-api.use("/", documentController);
+api.use("/index", indexController);
+api.use("/media", mediaController);
+api.use("/", authMiddleware.isLoggedIn, documentController);
 
 api.get("/cookie", (req, res) => {
   console.log(req.cookies);

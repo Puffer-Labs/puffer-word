@@ -90,6 +90,24 @@ class DocWorker {
       },
     });
   }
+
+  async suggest(query) {
+    return await client.search({
+      index: "documents",
+      query: {
+        multi_match: {
+          query: query,
+          fields: ["content"],
+          analyzer: "standard",
+        },
+      },
+      highlight: {
+        fields: {
+          content: {},
+        },
+      },
+    });
+  }
 }
 
 const workerInstance = new DocWorker();
