@@ -1,5 +1,5 @@
 // Imports
-const dotenv = require('dotenv');
+const dotenv = require("dotenv");
 dotenv.config();
 const express = require("express");
 const cors = require("cors");
@@ -12,7 +12,6 @@ const documentController = require("./controller/documentController");
 const mediaController = require("./controller/mediaController");
 const authController = require("./controller/authController");
 const authMiddleware = require("./middleware/authMiddleware");
-
 
 // Express Setup
 const api = express();
@@ -29,7 +28,7 @@ const elasticConfig = require("./config/elasticConfig");
 api.use(cookieParser());
 api.use(
   // cors({
-	//   origin: ["http://pufferlabs.cse356.compas.cs.stonybrook.edu", "http://localhost:3000"],
+  //   origin: ["http://pufferlabs.cse356.compas.cs.stonybrook.edu", "http://localhost:3000"],
   //   credentials: true,
   // })
   cors({
@@ -58,8 +57,8 @@ api.use(passport.session());
 
 // Controllers
 api.use((req, res, next) => {
-	res.setHeader("X-CSE356", "61f9d6733e92a433bf4fc8dd");
-	next();
+  res.setHeader("X-CSE356", "61f9d6733e92a433bf4fc8dd");
+  next();
 });
 api.use("/users", authController);
 api.use("/media", authMiddleware.isLoggedIn, mediaController);
@@ -72,8 +71,7 @@ api.get("/cookie", (req, res) => {
 
 const backend = api.listen(port, async () => {
   console.log(`API running on port ${port}`);
-  
-
+  const client = require("./config/elasticConfig");
 });
 
 process.on("SIGINT", () => {

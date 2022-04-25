@@ -18,7 +18,6 @@ class DocWorker {
       const document = ShareDB.sharedb_connection.get("documents", docId);
 
       document.fetch(async () => {
-        
         const doc = await client.exists({
           index: "documents",
           id: docId,
@@ -64,16 +63,31 @@ class DocWorker {
       document: {
         title: docTitle,
       },
-      
     });
-
-    
   }
 
   delete(docId) {
     client.delete({
       index: "documents",
       id: docId,
+    });
+  }
+
+  async search(query) {
+    return await client.search({
+      index: "documents",
+      query: {
+        multi_match: {
+          query: query,
+          fields: ["title", "content"],
+        },
+      },
+      highlight: {
+        fields: {
+          content: {},
+          title: {},
+        },
+      },
     });
   }
 }

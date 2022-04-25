@@ -72,4 +72,10 @@ documentRouter.get("/collection/list", async (req, res) => {
   res.status(200).send(docs);
 });
 
+documentRouter.get("/index/search", async (req, res) => {
+  const query = req.query.q;
+  const docs = await documentService.searchDocuments(query, res);
+  res.status(200).send(docs);
+});
+
 module.exports = documentRouter;

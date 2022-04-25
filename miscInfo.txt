@@ -36,7 +36,6 @@ TODO:
 
     SEARCH:
     have node client set up filter (stemmer and stop words)
-    
     set up highlighting
 
     AUTOCOMPLETE:
@@ -44,6 +43,3 @@ TODO:
 
     IMAGES:
     add gifs
-
-    ELASTIC CLIENT:
-    configure with elastic settings
