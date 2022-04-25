@@ -5,6 +5,7 @@
     "frontend": "concurrently --names \"REACT\" -c \"bgGreen\" \"cd frontend && npm start\""
   },
   "dependencies": {
-    "concurrently": "^7.1.0"
+    "concurrently": "^7.1.0",
+    "express": "^4.17.3"
   }
 }
