@@ -28,14 +28,17 @@ const elasticConfig = require("./config/elasticConfig");
 // Import Setup
 api.use(cookieParser());
 api.use(
-  // cors({
-  //   origin: ["http://pufferlabs.cse356.compas.cs.stonybrook.edu", "http://localhost:3000"],
-  //   credentials: true,
-  // })
   cors({
-    origin: "http://localhost:3000",
+    origin: [
+      "http://pufferlabs.cse356.compas.cs.stonybrook.edu",
+      "http://localhost:3000",
+    ],
     credentials: true,
   })
+  // cors({
+  //   origin: "http://localhost:3000",
+  //   credentials: true,
+  // })
 );
 api.use(
   session({
@@ -62,8 +65,8 @@ api.use((req, res, next) => {
   next();
 });
 api.use("/users", authController);
-api.use("/index", indexController);
-api.use("/media", mediaController);
+api.use("/index", authMiddleware.isLoggedIn, indexController);
+api.use("/media", authMiddleware.isLoggedIn, mediaController);
 api.use("/", authMiddleware.isLoggedIn, documentController);
 
 api.get("/cookie", (req, res) => {

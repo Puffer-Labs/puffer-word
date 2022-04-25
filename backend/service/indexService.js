@@ -26,9 +26,9 @@ const searchDocuments = async (query, res) => {
 const suggest = async (query, res) => {
   try {
     let results = await worker.suggest(query);
-    return results.hits.hits.map((hit) => {
-      return hit.highlight.content[0].split("<em>")[1].split("</em>")[0];
-    });
+    return results.hits.hits
+      .map((hit) => hit.highlight.content[0].split("<em>")[1].split("</em>")[0])
+      .filter((hit) => hit !== query);
   } catch (err) {
     console.log(err);
     res.status(400).send({
