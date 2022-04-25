@@ -67,7 +67,7 @@ const Auth = () => {
 					value={password}
 					onChange={(e) => setPassword(e.target.value)}
 				/>
-				<button id="login-btn" onClick={() => handleLogin()}>
+				<button id="login-btn" name="login-btn" onClick={() => handleLogin()}>
 					Login
 				</button>
 				<button onClick={() => handleLogout()}>Logout</button>
