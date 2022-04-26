@@ -26,8 +26,13 @@ const searchDocuments = async (query, res) => {
 const suggest = async (query, res) => {
   try {
     let results = await worker.suggest(query);
+    // Go through all the hits and return anything thats between <em> tags
     return results.hits.hits
-      .map((hit) => hit.highlight.content[0].split("<em>")[1].split("</em>")[0])
+      .flatMap((hit) => {
+        return hit.highlight.content[0]
+          .match(/<em>(.*?)<\/em>/g)
+          .map((val) => val.replace(/<em>|<\/em>/g, ""));
+      })
       .filter((hit) => hit !== query);
   } catch (err) {
     console.log(err);

@@ -65,7 +65,7 @@ api.use((req, res, next) => {
   next();
 });
 api.use("/users", authController);
-api.use("/index", authMiddleware.isLoggedIn, indexController);
+api.use("/index", indexController);
 api.use("/media", authMiddleware.isLoggedIn, mediaController);
 api.use("/", authMiddleware.isLoggedIn, documentController);
 
