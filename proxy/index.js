@@ -1,24 +1,44 @@
 const express = require("express");
-const app = express();
 const port = 8000;
+const request = require("request");
 const redisClient = require("./config/redisConfig");
 
-app.get("/docId/", async (req, res) => {
-  const docId = req.query.docId;
-  const processes = ["proc1", "proc2", "proc3", "proc4"];
-  const idExists = await redisClient.exists(docId);
-  if(idExists) {
-      const proc = await redisClient.get(docId);
-    res.send("THIS DOCUMENT IS ACTIVE, BEING SENT TO "+ proc);
-    } else {
-        const randomProcess = processes[Math.floor(Math.random() * processes.length)];
-        await redisClient.set(docId, randomProcess);
-        res.send("THIS DOCUMENT IS NOT ACTIVE, SENDING TO PROCESS "+ randomProcess);
-    }
-});
+const servers = ["8001", "8002", "8003", "8004"];
 
+const forwardRequest = (req, res, port) => {
+  console.log("http://localhost:" + port + req.url);
+  req.pipe(request({ url: "http://localhost:" + port + req.url })).pipe(res);
+};
+const requestHandler = async (req, res) => {
+  const targetEndpoint = req.url;
+  //if url contains /doc/
+  if (targetEndpoint.includes("/doc/")) {
+    //strucutre of url should be /doc/<action>/docId/...
+    const docId = targetEndpoint.split("/")[3];
+    const idExists = await redisClient.exists(docId);
+    if (idExists) {
+      const destPort = await redisClient.get(docId);
+      forwardRequest(req, res, destPort);
+    } else {
+      //send to random server
+      //      const randomPort = servers[Math.floor(Math.random() * servers.length)];
+      const randomPort = "8001";
+      await redisClient.set(docId, randomPort);
+      forwardRequest(req, res, randomPort);
+    }
+  } else {
+    //pick random server to send request to
+    //const randomPort = servers[Math.floor(Math.random() * servers.length)];
+    const randomPort = "8001";
+    forwardRequest(req, res, randomPort);
+  }
+};
+
+const app = express()
+  .get("*", requestHandler)
+  .post("*", requestHandler)
+  .put("*", requestHandler)
+  .delete("*", requestHandler);
 app.listen(port, async () => {
-  console.log(`Example app listening on port ${port}`);
-  await redisClient.set("test", "testValue");
-  console.log(await redisClient.get("test"));
+  console.log(`Proxy app listening on port ${port}`);
 });
