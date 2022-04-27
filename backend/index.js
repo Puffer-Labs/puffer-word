@@ -15,7 +15,7 @@ const authMiddleware = require("./middleware/authMiddleware");
 
 // Express Setup
 const api = express();
-const port = 8000;
+const port = 8001;
 api.use(express.json());
 api.use(express.urlencoded({ extended: true }));
 
@@ -23,6 +23,7 @@ api.use(express.urlencoded({ extended: true }));
 const passport = require("./config/passportConfig");
 const mongoDBClient = require("./config/mongoConfig");
 const elasticConfig = require("./config/elasticConfig");
+const { append } = require("express/lib/response");
 
 // Import Setup
 api.use(cookieParser());
@@ -63,7 +64,9 @@ api.use((req, res, next) => {
 api.use("/users", authController);
 api.use("/media", authMiddleware.isLoggedIn, mediaController);
 api.use("/", documentController);
-
+api.use("/hello", (req, res) => {
+  res.send("Hello World");
+});
 api.get("/cookie", (req, res) => {
   console.log(req.cookies);
   res.send("Hello World!");

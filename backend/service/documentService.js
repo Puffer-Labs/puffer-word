@@ -238,12 +238,7 @@ const getDocuments = async (res) => {
   }
 };
 
-//**
- * 
- * @param {*} query 
- * @param {*} res 
- * @returns 
- */
+
 const searchDocuments = async (query, res) => {
   try {
     let results = await worker.search(query);
@@ -256,7 +251,7 @@ const searchDocuments = async (query, res) => {
             ? hit.highlight.content[0]
             : hit.highlight.title[0],
       };
-    });
+    }).slice(0, 10); //only return the first 10 docs
   } catch (err) {
     console.log(err);
     res.status(400).send({
