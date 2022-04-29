@@ -7,6 +7,7 @@ const cookieParser = require("cookie-parser");
 const logger = require("morgan");
 const session = require("express-session");
 const parser = require("morgan-body");
+const EventEmitter = require("eventemitter3");
 
 const documentController = require("./controller/documentController");
 const indexController = require("./controller/indexController");
@@ -24,6 +25,7 @@ api.use(express.urlencoded({ extended: true }));
 const passport = require("./config/passportConfig");
 const mongoDBClient = require("./config/mongoConfig");
 const elasticConfig = require("./config/elasticConfig");
+const redisConfig = require("./config/redisConfig");
 
 // Import Setup
 api.use(cookieParser());
@@ -57,21 +59,21 @@ api.use(passport.initialize());
 api.use(passport.session());
 // api.use(logger("dev"));
 
-parser(api);
+// parser(api);
 
 // Controllers
 api.use((req, res, next) => {
   res.setHeader("X-CSE356", "61f9d6733e92a433bf4fc8dd");
+  res.setHeader("Cache-Control", "no-cache");
   next();
 });
 api.use("/users", authController);
 api.use("/index", indexController);
 api.use("/media", authMiddleware.isLoggedIn, mediaController);
-api.use("/", authMiddleware.isLoggedIn, documentController);
+api.use("/", documentController);
 
 api.get("/cookie", (req, res) => {
-  console.log(req.cookies);
-  res.send("Hello World!");
+  res.send("cookie set");
 });
 
 const backend = api.listen(port, async () => {

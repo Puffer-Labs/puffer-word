@@ -5,7 +5,7 @@ import cursors from "./cursors";
 import images from "./images";
 import Queue from "./queue";
 import "quill/dist/quill.snow.css";
-const {API} = require("./constants");
+const { API } = require("./constants");
 
 //generate random client id
 const getId = () => {
@@ -64,15 +64,14 @@ const App = () => {
        * 3. {data: {cursor: {connClosed: boolean, id: string, position: number}}} This is the cursor position of one of the clients that was updated.
        */
       const data = JSON.parse(event.data);
-      console.log("On message", event);
       if (cursors.isRemoteCursorEvent(data.presence, id)) {
         cursors.processCursorEvent(data.presence, addToList, removeFromList);
       } else if (data.content) {
         quill.setContents(data.content);
         queue.setVersion(data.version);
-        queue.process();
       } else if (data.ack) {
         queue.incrementVersion();
+        queue.isRequestAcknowledged = true;
       } else if (data) {
         quill.updateContents(data);
         queue.incrementVersion();
@@ -84,11 +83,9 @@ const App = () => {
       /**
        * Whenever the user makes a change to the editor, we send latest OP to the server.
        */
-      console.log(source);
       if (source === "user") {
-        console.log("How many times is this running?");
         const op = delta.ops;
-        queue.enqueue(op);
+        queue.post(op);
       }
     });
 
@@ -117,7 +114,6 @@ const App = () => {
   function selectionChangeHandler(docId, id) {
     return function (range, oldRange, source) {
       if (range && source === "user") {
-        console.log(range);
         fetch(`${API}/doc/presence/${docId}/${id}`, {
           method: "POST",
           headers: {
@@ -125,9 +121,7 @@ const App = () => {
           },
           credentials: "include",
           body: JSON.stringify(range),
-        }).then((res) => {
-          console.log(res);
-        });
+        }).then((res) => {});
         // cursor.moveCursor(id, range);
       }
     };

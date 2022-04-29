@@ -1,11 +1,21 @@
-const ShareDB = require("../config/sharedbConfig");
+// const ShareDB = require("../config/sharedbConfig");
 const { mongoDBClient } = require("../config/mongoConfig");
 const generateRandomID = require("../utils/idGenerator");
 const ActiveDocumentPresence = require("./activeDocuments");
 const QuillDeltaToHtmlConverter =
   require("quill-delta-to-html").QuillDeltaToHtmlConverter;
 
+const redis = require("redis");
+
+// const subscriber = redis.createClient();
+// const publisher = redis.createClient();
+
+const q = [];
+
+const { getConnection, getShareDB } = require("../config/sharedbConfig");
+
 const worker = require("./documentWorker");
+const { docQueue } = require("../config/redisConfig");
 let lastOKrequestVersion = 0;
 // const document = ShareDB.document;
 
@@ -27,12 +37,13 @@ const activeDocumentPresence = new ActiveDocumentPresence();
  * Attempts to connect to the document. If the document already exists, it will publish OPs through the event stream.
  *
  */
-const connectToDocument = (docId, uId, res, email) => {
+const connectToDocument = async (docId, uId, res, email) => {
   // Establish a new ShareDB connection
-  const connection = ShareDB.sharedb_connection;
+  const connection = getShareDB().connect();
   const document = connection.get("documents", docId);
   // Map the connection to the client ID
   document.fetch(() => {
+    document.submitSource = true;
     if (document.type === null) {
       //throw error if null
       res.status(400).send({ error: true, message: "Document Not Found" });
@@ -55,15 +66,47 @@ const connectToDocument = (docId, uId, res, email) => {
       email: email,
     });
 
-    activeDocumentPresence.setupPresence(docId, uId, res, email);
+    // document.on("op", async (op, source) => {
+    //   // If the incoming op is from the client, ignore it
+    //   if (source !== uId) {
+    //     res.write("data: " + JSON.stringify(op) + "\n\n");
+    //   } else res.write("data: " + JSON.stringify({ ack: op }) + "\n\n");
+    // });
 
-    document.on("op", (op, source) => {
-      // If the incoming op is from the client, ignore it
-      if (source !== uId) {
-        res.write("data: " + JSON.stringify(op) + "\n\n");
-      } else res.write("data: " + JSON.stringify({ ack: op }) + "\n\n");
+    docQueue.on("completed", async (data) => {
+      const payload = data.data;
+      const { payloadUserId, op } = JSON.parse(payload.data);
+      if (payloadUserId === uId) {
+        res.write(`data: ${JSON.stringify({ ack: op })}\n\n`);
+      } else {
+        res.write(`data: ${JSON.stringify(op)}\n\n`);
+      }
     });
+
+    activeDocumentPresence.setupPresence(docId, uId, res, email);
   });
+
+  //   docQueue.process(async (job) => {
+  //     const data = job.data;
+  //     const { id, op } = JSON.parse(data.data);
+  //     if (id === uId) {
+  //       res.write(`data: ${JSON.stringify({ ack: op })}\n\n`);
+  //     } else {
+  //       res.write(`data: ${JSON.stringify(op)}\n\n`);
+  //     }
+  // });
+
+  // subscriber.on("message", (channel, message) => {
+  //   const data = JSON.parse(message);
+  //   if (!(data.id && data.op)) return;
+  //   if (data.id !== uId) {
+  //     res.write(`data: ${JSON.stringify(data.op)}\n\n`);
+  //   } else {
+  //     res.write(`data: ${JSON.stringify({ ack: data.op })}\n\n`);
+  //   }
+  // });
+
+  // subscriber.subscribe("documents");
 };
 
 const setUpConnectedDocumentResponse = (res, data) => {
@@ -74,6 +117,8 @@ const setUpConnectedDocumentResponse = (res, data) => {
   // Set appropriate headers
   res.set("X-Accel-Buffering", "no"); // Disable nginx buffering
   res.set("Content-Type", "text/event-stream");
+  res.set("Keep-Alive", "timeout=15, max=100");
+  res.set("Transfer-Encoding", "identity");
   res.write(
     "data: " +
       JSON.stringify({ content: data.ops, version: data.version }) +
@@ -93,26 +138,53 @@ const submitPresenceRange = (docId, uId, range, res) => {
  *
  * Goes through the ops array and submits them to the document.
  */
-const postOp = (docId, uId, data, res) => {
+const postOp = async (docId, uId, data, res) => {
   const { op, version } = data;
-  const document = ShareDB.sharedb_connection.get("documents", docId);
+  const document = getConnection().get("documents", docId);
+  // const connection = getShareDB().connect();
+  // const document = connection.get("documents", docId);
+
   if (!(version == document.version && lastOKrequestVersion != version)) {
-    res.status(200).send({
+    res.status(400).send({
+      op: op,
       status: "retry",
       serverVersion: document.version,
       requestVersion: version,
     });
   } else {
     lastOKrequestVersion = version;
-    document.submitOp(op, { source: uId }, () => {
-      worker.enqueue(docId);
-      res.status(200).send({
-        op: op,
-        status: "ok",
-        serverVersion: document.version,
-        requestVersion: version,
-      });
+    document.submitSource = true;
+    try {
+      docQueue.add(
+        {
+          data: JSON.stringify({
+            payloadUserId: uId,
+            id: docId,
+            op: op,
+          }),
+        }
+        // publisher.publish(
+        //   "documents",
+        //   JSON.stringify({
+        //     op: op,
+        //     id: uId,
+        //   })
+      );
+    } catch (e) {
+      console.log(e);
+    }
+    res.status(200).send({
+      status: "ok",
     });
+    // document.submitOp(op, { source: uId }, () => {
+    //   worker.enqueue(docId);
+    //   res.status(200).send({
+    //     op: op,
+    //     status: "ok",
+    //     serverVersion: document.version,
+    //     requestVersion: version,
+    //   });
+    // });
   }
 };
 
