@@ -11,7 +11,7 @@ const passport = require('../config/passportConfig');
  */
 
 const isLoggedIn = (req, res, next) => {
-	if (req.session.passport) {
+	if (req.cookies.user) {
 		next();
 	} else {
 		res.status(401).send({

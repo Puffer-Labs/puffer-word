@@ -18,7 +18,6 @@ let cursorModule;
  */
 const processCursorEvent = (data, add, remove) => {
   const clientCursor = cursors[data.id];
-  console.log(data);
   if (data.cursor != null && !clientCursor) {
     create(data.id, data.cursor.name);
     add(data.cursor.name);

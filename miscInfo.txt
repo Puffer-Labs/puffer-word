@@ -1,0 +1,45 @@
+sudo docker run --name es01 --net elastic -p 9200:9200 -p 9300:9300 -it -e "discovery.type=single-node" docker.elastic.co/elasticsearch/elasticsearch:8.1.3
+
+Postmanfilter:
+
+{
+    "settings": {
+        "number_of_shards": 2,
+        "number_of_replicas": 1,
+        "analysis": {
+            "analyzer": {
+                "doc_analyzer": {
+                    "tokenizer": "whitespace",
+                    "filter": [
+                        "stop",
+                        "stemmer"
+                    ]
+                }
+            }
+        }
+    },
+    "mappings": {
+        "properties": {
+            "content": {
+                "type": "text",
+                "analyzer": "doc_analyzer"
+            },
+            "title": {
+                "type": "text",
+                "analyzer": "doc_analyzer"
+            }
+        }
+    }
+}
+
+TODO: 
+
+    SEARCH:
+    have node client set up filter (stemmer and stop words)
+    set up highlighting
+
+    AUTOCOMPLETE:
+    prefix match, if no match, return []
+
+    IMAGES:
+    add gifs

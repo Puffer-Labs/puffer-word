@@ -45,7 +45,7 @@ const Auth = () => {
 
   const handleRegister = async () => {
     await axios.post(`${API}/users/signup`, {
-      username: rUsername,
+      name: rUsername,
       email: rEmail,
       password: rPassword,
     });
@@ -63,6 +63,7 @@ const Auth = () => {
         <input
           placeholder="Password"
           value={password}
+          type="password"
           onChange={(e) => setPassword(e.target.value)}
         />
         <button onClick={() => handleLogin()}>Login</button>
@@ -83,6 +84,7 @@ const Auth = () => {
         <input
           placeholder="Password"
           value={rPassword}
+          type="password"
           onChange={(e) => setRPassword(e.target.value)}
         />
         <button onClick={() => handleRegister()}>Register</button>

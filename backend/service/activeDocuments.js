@@ -1,4 +1,4 @@
-const { sharedb_server } = require("../config/sharedbConfig");
+const { getConnection } = require("../config/sharedbConfig");
 
 /**
  * An active document represents a document that has a presence.
@@ -25,10 +25,12 @@ class ActiveDocumentPresence {
   addNewConnection(docId, uId) {
     //If this document is currently active && a client with this id is already connected, do not accept connection
     if (this.activeDocuments[docId] && this.activeDocuments[docId][uId]) {
+      console.log("already connected");
       return false;
     }
     //document is not active, create key for it
     if (!this.activeDocuments[docId]) {
+      console.log("creating new key");
       this.activeDocuments[docId] = {};
     }
     return true;
@@ -70,7 +72,7 @@ class ActiveDocumentPresence {
    * Initalizes an initial presence when a new user connects to the document.
    */
   setupPresence(docId, uId, res, email) {
-    const connection = sharedb_server.connect();
+    const connection = getConnection();
     const doc = connection.get(this._COLLECTION_NAME, docId);
     doc.fetch(() => {
       const presence = connection.getDocPresence(this._COLLECTION_NAME, docId);
