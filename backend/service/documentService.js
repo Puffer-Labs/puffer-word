@@ -5,12 +5,18 @@ const ActiveDocumentPresence = require("./activeDocuments");
 const QuillDeltaToHtmlConverter =
   require("quill-delta-to-html").QuillDeltaToHtmlConverter;
 
+const rabbit = require("./messageBroker");
+let broker = null;
+rabbit.getInstance().then((instance) => {
+  broker = instance;
+});
+
 const redis = require("redis");
 
 // const subscriber = redis.createClient();
 // const publisher = redis.createClient();
 
-const q = [];
+const { publish } = require("../config/rabbitMqConfig");
 
 const { getConnection, getShareDB } = require("../config/sharedbConfig");
 
@@ -73,17 +79,26 @@ const connectToDocument = async (docId, uId, res, email) => {
     //   } else res.write("data: " + JSON.stringify({ ack: op }) + "\n\n");
     // });
 
-    docQueue.on("completed", async (data) => {
-      const payload = data.data;
-      const { payloadUserId, op } = JSON.parse(payload.data);
-      if (payloadUserId === uId) {
-        res.write(`data: ${JSON.stringify({ ack: op })}\n\n`);
-      } else {
-        res.write(`data: ${JSON.stringify(op)}\n\n`);
-      }
-    });
+    // docQueue.on("completed", async (data) => {
+    //   const payload = data.data;
+    //   const { payloadUserId, op } = JSON.parse(payload.data);
+    //   if (payloadUserId === uId) {
+    //     res.write(`data: ${JSON.stringify({ ack: op })}\n\n`);
+    //   } else {
+    //     res.write(`data: ${JSON.stringify(op)}\n\n`);
+    //   }
+    // });
 
     activeDocumentPresence.setupPresence(docId, uId, res, email);
+  });
+
+  broker.subscribe(async (msg) => {
+    const { op, payloadUserId } = JSON.parse(msg.content.toString());
+    if (payloadUserId === uId) {
+      res.write(`data: ${JSON.stringify({ ack: op })}\n\n`);
+    } else {
+      res.write(`data: ${JSON.stringify(op)}\n\n`);
+    }
   });
 
   //   docQueue.process(async (job) => {
@@ -144,48 +159,38 @@ const postOp = async (docId, uId, data, res) => {
   // const connection = getShareDB().connect();
   // const document = connection.get("documents", docId);
 
-  if (!(version == document.version && lastOKrequestVersion != version)) {
-    res.status(400).send({
-      op: op,
-      status: "retry",
-      serverVersion: document.version,
-      requestVersion: version,
-    });
-  } else {
-    lastOKrequestVersion = version;
-    document.submitSource = true;
-    try {
-      docQueue.add(
-        {
-          data: JSON.stringify({
-            payloadUserId: uId,
-            id: docId,
-            op: op,
-          }),
-        }
-        // publisher.publish(
-        //   "documents",
-        //   JSON.stringify({
-        //     op: op,
-        //     id: uId,
-        //   })
-      );
-    } catch (e) {
-      console.log(e);
+  document.fetch(() => {
+    if (!(version == document.version && lastOKrequestVersion != version)) {
+      res.status(400).send({
+        op: op,
+        status: "retry",
+        serverVersion: document.version,
+        requestVersion: version,
+      });
+    } else {
+      lastOKrequestVersion = version;
+      document.submitSource = true;
+      document.submitOp(op, () => {
+        broker.publish({
+          op: op,
+          payloadUserId: uId,
+        });
+        res.status(200).send({
+          status: "ok",
+        });
+      });
+
+      // document.submitOp(op, { source: uId }, () => {
+      //   worker.enqueue(docId);
+      //   res.status(200).send({
+      //     op: op,
+      //     status: "ok",
+      //     serverVersion: document.version,
+      //     requestVersion: version,
+      //   });
+      // });
     }
-    res.status(200).send({
-      status: "ok",
-    });
-    // document.submitOp(op, { source: uId }, () => {
-    //   worker.enqueue(docId);
-    //   res.status(200).send({
-    //     op: op,
-    //     status: "ok",
-    //     serverVersion: document.version,
-    //     requestVersion: version,
-    //   });
-    // });
-  }
+  });
 };
 
 /**

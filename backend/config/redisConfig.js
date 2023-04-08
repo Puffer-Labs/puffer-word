@@ -16,12 +16,16 @@ redisClient.on("connect", function () {
 const docQueue = new Bull("doc-queue");
 
 const initQueue = () => {
-const { getConnection } = require("./sharedbConfig");
+  const { getConnection } = require("./sharedbConfig");
   docQueue.process(async function (job) {
-    const data = job.data;
-    const { id, op } = JSON.parse(data.data);
-    const document = getConnection().get("documents", id);
-    document.submitOp(op);
+    try {
+      const data = job.data;
+      const { id, op } = JSON.parse(data.data);
+      const document = getConnection().get("documents", id);
+      document.submitOp(op);
+    } catch (error) {
+      console.log(error);
+    }
   });
 };
 

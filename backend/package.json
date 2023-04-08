@@ -12,6 +12,7 @@
   "dependencies": {
     "@elastic/elasticsearch": "^8.1.0",
     "@teamwork/websocket-json-stream": "^2.0.0",
+    "amqplib": "^0.8.0",
     "bcrypt": "^5.0.1",
     "bull": "^4.8.2",
     "cookie-parser": "^1.4.6",
